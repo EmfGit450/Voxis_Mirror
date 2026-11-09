@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "@babylonjs/core": "^9.35.0",
+    "@babylonjs/loaders": "^9.35.0"
+  },
+  "scripts": {
+    "serve": "python3 -m http.server 3141",
+    "watch": "esbuild ts/main.ts --bundle --platform=browser --format=esm --outfile=main.js --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

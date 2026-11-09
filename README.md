@@ -1,0 +1,3 @@
+# Cubeworld
+
+A voxel game
