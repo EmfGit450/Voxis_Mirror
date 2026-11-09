@@ -183992,15 +183992,22 @@ init_flowGraphUnsupportedInteractivityBlock();
 // node_modules/@babylonjs/core/Cameras/freeCamera.js
 RegisterFreeCamera();
 
-// ts/modules/camera.ts
-var Camera2 = class {
+// ts/modules/player.ts
+var Player = class {
   bjsCamera;
   pitch = 0;
   yaw = 0;
   sensitivity = 1e-3;
-  keys;
-  constructor(canvas2, scene2) {
-    this.bjsCamera = new FreeCamera("camera", new Vector3(-20, 0, 0), scene2);
+  walkSpeed = 4.137;
+  keys = {
+    "KeyW": false,
+    "KeyA": false,
+    "KeyS": false,
+    "KeyD": false
+  };
+  constructor(canvas2, scene2, engine2) {
+    this.bjsCamera = new FreeCamera("camera", new Vector3(0, 0, -10), scene2);
+    this.bjsCamera.minZ = 0.1;
     this.bjsCamera.inputs.clear();
     scene2.activeCamera = this.bjsCamera;
     canvas2.addEventListener("click", () => {
@@ -184010,16 +184017,32 @@ var Camera2 = class {
       if (document.pointerLockElement !== canvas2) return;
       this.yaw += e.movementX * this.sensitivity;
       this.pitch -= e.movementY * this.sensitivity;
-      this.pitch = Math.max(-1.57079632, Math.min(1.57079632, this.pitch));
+      this.pitch = Math.max(-1.5607963267948965, Math.min(1.5607963267948965, this.pitch));
       this.applyHeading();
     });
-    this.keys = {
-      "w": false,
-      "a": false,
-      "s": false,
-      "d": false
-    };
-    document.addEventListener("keydown");
+    document.addEventListener("keydown", (e) => {
+      this.keys[e.code] = true;
+    });
+    document.addEventListener("keyup", (e) => {
+      this.keys[e.code] = false;
+    });
+    window.addEventListener("blur", () => {
+      for (const k in this.keys) this.keys[k] = false;
+    });
+    scene2.onBeforeRenderObservable.add(() => {
+      const dt = engine2.getDeltaTime() / 1e3;
+      const forward = new Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw));
+      const right = new Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
+      const move = new Vector3(0, 0, 0);
+      if (this.keys["KeyW"]) move.addInPlace(forward);
+      if (this.keys["KeyS"]) move.subtractInPlace(forward);
+      if (this.keys["KeyD"]) move.addInPlace(right);
+      if (this.keys["KeyA"]) move.subtractInPlace(right);
+      if (move.lengthSquared() > 0) {
+        move.normalize().scaleInPlace(this.walkSpeed * dt);
+        this.bjsCamera.position.addInPlace(move);
+      }
+    });
   }
   applyHeading() {
     const dir = new Vector3(
@@ -184035,9 +184058,12 @@ var Camera2 = class {
 var canvas = document.querySelector("#renderCanvas");
 var engine = new Engine(canvas, true);
 var scene = new Scene(engine);
-var camera = new Camera2(canvas, scene);
+var camera = new Player(canvas, scene, engine);
 scene.clearColor = new Color4(0.1, 0.1, 0.1, 1);
 await AppendSceneAsync("assets/grass_block.glb", scene);
+scene.meshes[1].setParent(null);
+scene.meshes[0].dispose();
+console.log(scene.meshes[0].position.y -= 6);
 window.addEventListener("resize", () => {
   engine.resize();
 });
