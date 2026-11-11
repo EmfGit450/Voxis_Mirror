@@ -183999,11 +183999,16 @@ var Player = class {
   yaw = 0;
   sensitivity = 1e-3;
   walkSpeed = 4.137;
+  gravity = 0.07;
+  floor = 0;
+  position = Vector3.Zero();
+  velocity = Vector3.Zero();
   keys = {
     "KeyW": false,
     "KeyA": false,
     "KeyS": false,
-    "KeyD": false
+    "KeyD": false,
+    "Space": false
   };
   constructor(canvas2, scene2, engine2) {
     this.bjsCamera = new FreeCamera("camera", new Vector3(0, 0, -10), scene2);
@@ -184033,7 +184038,7 @@ var Player = class {
       const dt = engine2.getDeltaTime() / 1e3;
       const forward = new Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw));
       const right = new Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
-      const move = new Vector3(0, 0, 0);
+      const move = Vector3.Zero();
       if (this.keys["KeyW"]) move.addInPlace(forward);
       if (this.keys["KeyS"]) move.subtractInPlace(forward);
       if (this.keys["KeyD"]) move.addInPlace(right);
@@ -184041,6 +184046,21 @@ var Player = class {
       if (move.lengthSquared() > 0) {
         move.normalize().scaleInPlace(this.walkSpeed * dt);
         this.bjsCamera.position.addInPlace(move);
+      }
+    });
+    scene2.onBeforeRenderObservable.add(() => {
+      const dt = engine2.getDeltaTime() / 1e3;
+      if (this.keys["Space"] && this.position.y == this.floor) {
+        this.velocity.y = 1;
+      }
+      this.position.x += this.velocity.x;
+      this.position.y += this.velocity.y;
+      this.position.z += this.velocity.z;
+      this.bjsCamera.position = this.position;
+      this.velocity.y -= this.gravity;
+      if (this.position.y < 0) {
+        this.velocity.y = 0;
+        this.position.y = 0;
       }
     });
   }

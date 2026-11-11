@@ -14,12 +14,18 @@ export class Player {
   sensitivity: number = 0.001;
 
   walkSpeed: number = 4.137;
+  gravity: number = 0.07;
+  floor: number = 0;
+
+  position: Vector3 = Vector3.Zero();
+  velocity: Vector3 = Vector3.Zero();
 
   keys: Record<string, boolean> = {
     "KeyW": false,
     "KeyA": false,
     "KeyS": false,
-    "KeyD": false
+    "KeyD": false,
+    "Space": false
   }
 
   constructor(canvas: HTMLCanvasElement, scene: Scene, engine: Engine) {
@@ -55,7 +61,7 @@ export class Player {
       const forward = new Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw));
       const right = new Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
 
-      const move = new Vector3(0, 0, 0);
+      const move = Vector3.Zero();
       if (this.keys["KeyW"]) move.addInPlace(forward);
       if (this.keys["KeyS"]) move.subtractInPlace(forward);
       if (this.keys["KeyD"]) move.addInPlace(right);
@@ -64,6 +70,28 @@ export class Player {
       if (move.lengthSquared() > 0) {
         move.normalize().scaleInPlace(this.walkSpeed * dt);
         this.bjsCamera.position.addInPlace(move);
+      }
+    });
+
+
+
+    scene.onBeforeRenderObservable.add(() => {
+      const dt = engine.getDeltaTime() / 1000;
+
+      if (this.keys["Space"] && this.position.y == this.floor) {
+        this.velocity.y = 1;
+      }
+
+      this.position.x += this.velocity.x;
+      this.position.y += this.velocity.y;
+      this.position.z += this.velocity.z;
+
+      this.bjsCamera.position = this.position;
+
+      this.velocity.y -= this.gravity;
+      if (this.position.y < 0) {
+        this.velocity.y = 0;
+        this.position.y = 0;
       }
     });
     //Movement End
