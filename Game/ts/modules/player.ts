@@ -14,7 +14,7 @@ export class Player {
   sensitivity: number = 0.001;
 
   walkSpeed: number = 4.137;
-  gravity: number = 0.07;
+  gravity: number = 0.03;
   floor: number = 0;
 
   position: Vector3 = Vector3.Zero();
@@ -79,7 +79,7 @@ export class Player {
       const dt = engine.getDeltaTime() / 1000;
 
       if (this.keys["Space"] && this.position.y == this.floor) {
-        this.velocity.y = 1;
+        this.velocity.y = 0.3;
       }
 
       this.position.x += this.velocity.x;
