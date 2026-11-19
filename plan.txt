@@ -1,0 +1,29 @@
+Yes. store a voxel object data type. then, for each of these, do AWVRT. bounding box check, traversal, etc. the voxel object, is this
+
+class BoundingBox {
+  minx: number;
+  miny: number;
+  maxx: number;
+  maxy; number;
+
+  constructor(sx, sy, ex, ey) {
+    this.minx = sx;
+    this.miny = sy;
+    this.maxx = ex;
+    this.maxy = ey;
+  }
+}
+
+class VoxelObject {
+  position: Vector3;
+  bounds: BoundingBox;
+  
+  voxelData: Uint16Array;
+  
+  constructor(position: Vector3, bbDims: BoundingBoxDims) {
+    this.position = position;
+    h
+  }
+}
+
+about this

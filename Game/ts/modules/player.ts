@@ -14,7 +14,7 @@ export class Player {
   sensitivity: number = 0.001;
 
   walkSpeed: number = 4.137;
-  gravity: number = 0.03;
+  gravity: number = 0.025;
   floor: number = 0;
 
   position: Vector3 = Vector3.Zero();

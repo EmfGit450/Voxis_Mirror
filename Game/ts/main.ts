@@ -19,7 +19,7 @@ const world = new World(scene);
 
 for (let x = -5; x < 6; x++) {
   for (let z = -5; z < 6; z++) {
-    world.addVoxel(new Vector3(x, -3, z), VoxelTexType.Grass);
+    world.addVoxel(new Vector3(x, Math.floor(Math.random() * 3) + -3, z), VoxelTexType.Grass);
   }
 }
 

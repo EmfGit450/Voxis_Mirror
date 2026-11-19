@@ -58732,6 +58732,143 @@ function RegisterDirectionalLight() {
 // node_modules/@babylonjs/core/Lights/directionalLight.js
 RegisterDirectionalLight();
 
+// node_modules/@babylonjs/core/Lights/hemisphericLight.pure.js
+init_tslib_es6();
+init_decorators();
+init_math_vector_pure();
+init_math_color_pure();
+init_typeStore();
+var HemisphericLight = (() => {
+  var _a9;
+  let _classSuper = Light;
+  let _groundColor_decorators;
+  let _groundColor_initializers = [];
+  let _groundColor_extraInitializers = [];
+  let _direction_decorators;
+  let _direction_initializers = [];
+  let _direction_extraInitializers = [];
+  return _a9 = class HemisphericLight extends _classSuper {
+    /**
+     * Creates a HemisphericLight object in the scene according to the passed direction (Vector3).
+     * The HemisphericLight simulates the ambient environment light, so the passed direction is the light reflection direction, not the incoming direction.
+     * The HemisphericLight can't cast shadows.
+     * Documentation : https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
+     * @param name The friendly name of the light
+     * @param direction The direction of the light reflection
+     * @param scene The scene the light belongs to
+     * @param dontAddToScene True to not add the light to the scene
+     */
+    constructor(name139, direction, scene2, dontAddToScene) {
+      super(name139, scene2, dontAddToScene);
+      this.groundColor = __runInitializers(this, _groundColor_initializers, new Color3(0, 0, 0));
+      this.direction = (__runInitializers(this, _groundColor_extraInitializers), __runInitializers(this, _direction_initializers, void 0));
+      __runInitializers(this, _direction_extraInitializers);
+      this.direction = direction || Vector3.Up();
+    }
+    _buildUniformLayout() {
+      this._uniformBuffer.addUniform("vLightData", 4);
+      this._uniformBuffer.addUniform("vLightDiffuse", 4);
+      this._uniformBuffer.addUniform("vLightSpecular", 4);
+      this._uniformBuffer.addUniform("vLightGround", 3);
+      this._uniformBuffer.addUniform("shadowsInfo", 3);
+      this._uniformBuffer.addUniform("depthValues", 2);
+      this._uniformBuffer.create();
+    }
+    /**
+     * Returns the string "HemisphericLight".
+     * @returns The class name
+     */
+    getClassName() {
+      return "HemisphericLight";
+    }
+    /**
+     * Sets the HemisphericLight direction towards the passed target (Vector3).
+     * Returns the updated direction.
+     * @param target The target the direction should point to
+     * @returns The computed direction
+     */
+    setDirectionToTarget(target) {
+      this.direction = Vector3.Normalize(target.subtract(Vector3.Zero()));
+      return this.direction;
+    }
+    /**
+     * Returns the shadow generator associated to the light.
+     * @returns Always null for hemispheric lights because it does not support shadows.
+     */
+    getShadowGenerator() {
+      return null;
+    }
+    /**
+     * Sets the passed Effect object with the HemisphericLight normalized direction and color and the passed name (string).
+     * @param _effect The effect to update
+     * @param lightIndex The index of the light in the effect to update
+     * @returns The hemispheric light
+     */
+    transferToEffect(_effect, lightIndex) {
+      const normalizeDirection = Vector3.Normalize(this.direction);
+      this._uniformBuffer.updateFloat4("vLightData", normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, 0, lightIndex);
+      this._uniformBuffer.updateColor3("vLightGround", this.groundColor.scale(this.intensity), lightIndex);
+      return this;
+    }
+    transferToNodeMaterialEffect(effect, lightDataUniformName) {
+      const normalizeDirection = Vector3.Normalize(this.direction);
+      effect.setFloat3(lightDataUniformName, normalizeDirection.x, normalizeDirection.y, normalizeDirection.z);
+      return this;
+    }
+    /**
+     * Computes the world matrix of the node
+     * @returns the world matrix
+     */
+    computeWorldMatrix() {
+      if (!this._worldMatrix) {
+        this._worldMatrix = Matrix.Identity();
+      }
+      return this._worldMatrix;
+    }
+    /**
+     * Returns the integer 3.
+     * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    getTypeID() {
+      return Light.LIGHTTYPEID_HEMISPHERICLIGHT;
+    }
+    /**
+     * Prepares the list of defines specific to the light type.
+     * @param defines the list of defines
+     * @param lightIndex defines the index of the light for the effect
+     */
+    prepareLightSpecificDefines(defines, lightIndex) {
+      defines["HEMILIGHT" + lightIndex] = true;
+    }
+  }, (() => {
+    const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
+    _groundColor_decorators = [serializeAsColor3()];
+    _direction_decorators = [serializeAsVector3()];
+    __esDecorate(null, null, _groundColor_decorators, { kind: "field", name: "groundColor", static: false, private: false, access: { has: (obj) => "groundColor" in obj, get: (obj) => obj.groundColor, set: (obj, value) => {
+      obj.groundColor = value;
+    } }, metadata: _metadata }, _groundColor_initializers, _groundColor_extraInitializers);
+    __esDecorate(null, null, _direction_decorators, { kind: "field", name: "direction", static: false, private: false, access: { has: (obj) => "direction" in obj, get: (obj) => obj.direction, set: (obj, value) => {
+      obj.direction = value;
+    } }, metadata: _metadata }, _direction_initializers, _direction_extraInitializers);
+    if (_metadata) Object.defineProperty(_a9, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
+  })(), _a9;
+})();
+var _Registered30 = false;
+function RegisterHemisphericLight() {
+  if (_Registered30) {
+    return;
+  }
+  _Registered30 = true;
+  Node.AddNodeConstructor("Light_Type_3", (name139, scene2) => {
+    return () => new HemisphericLight(name139, Vector3.Zero(), scene2);
+  });
+  RegisterClass("BABYLON.HemisphericLight", HemisphericLight);
+}
+
+// node_modules/@babylonjs/core/Lights/hemisphericLight.js
+RegisterHemisphericLight();
+
 // node_modules/@babylonjs/core/Meshes/Builders/boxBuilder.pure.js
 init_math_vector_pure();
 init_math_color_pure();
@@ -77231,12 +77368,12 @@ function CreateBox(name139, options = {}, scene2 = null) {
   vertexData.applyToMesh(box, options.updatable);
   return box;
 }
-var _Registered30 = false;
+var _Registered31 = false;
 function RegisterBoxBuilder() {
-  if (_Registered30) {
+  if (_Registered31) {
     return;
   }
-  _Registered30 = true;
+  _Registered31 = true;
   VertexData.CreateBox = CreateBoxVertexData;
   Mesh.CreateBox = (name139, size, scene2 = null, updatable, sideOrientation) => {
     const options = {
@@ -81108,12 +81245,12 @@ var StandardMaterial = (() => {
    */
   _a9.ForceGLSL = false, _a9._ShaderLoader = new _ShaderImportLoader(() => [Promise.resolve().then(() => (init_default_vertex(), default_vertex_exports)), Promise.resolve().then(() => (init_default_fragment(), default_fragment_exports))], () => [Promise.resolve().then(() => (init_default_vertex2(), default_vertex_exports2)), Promise.resolve().then(() => (init_default_fragment2(), default_fragment_exports2))]), _a9;
 })();
-var _Registered31 = false;
+var _Registered32 = false;
 function RegisterStandardMaterial() {
-  if (_Registered31) {
+  if (_Registered32) {
     return;
   }
-  _Registered31 = true;
+  _Registered32 = true;
   RegisterImageProcessingConfiguration();
   RegisterClass("BABYLON.StandardMaterial", StandardMaterial);
   Scene.DefaultMaterialFactory = (scene2) => {
@@ -81142,24 +81279,25 @@ var World = class {
     this.scene = scene2;
     const sun = new DirectionalLight(
       "sun",
-      new Vector3(-1, -2, -1).normalize(),
+      new Vector3(0, -1, 0),
       this.scene
     );
     sun.intensity = 0.9;
+    const fill = new HemisphericLight(
+      "fill",
+      new Vector3(0, 1, 0),
+      this.scene
+    );
+    fill.intensity = 1;
+    fill.groundColor = new Color3(0.2, 0.2, 0.2);
     this.voxelData = [];
     this.voxelFaceUV = [
       new Vector4(0.375, 0.5, 0.625, 0.75),
-      // +Z — side1
       new Vector4(0.375, 0, 0.625, 0.25),
-      // -Z — side3
       new Vector4(0.375, 0.25, 0.625, 0.5),
-      // +X — side2
       new Vector4(0.375, 0.75, 0.625, 1),
-      // -X — side(topmost)
       new Vector4(0.125, 0.5, 0.375, 0.75),
-      // +Y — top
       new Vector4(0.625, 0.5, 0.875, 0.75)
-      // -Y — bottom
     ];
     this.textures = /* @__PURE__ */ new Map();
   }
@@ -83892,12 +84030,12 @@ var FreeCamera = (() => {
     if (_metadata) Object.defineProperty(_a9, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
   })(), _a9;
 })();
-var _Registered32 = false;
+var _Registered33 = false;
 function RegisterFreeCamera() {
-  if (_Registered32) {
+  if (_Registered33) {
     return;
   }
-  _Registered32 = true;
+  _Registered33 = true;
   RegisterClass("BABYLON.FreeCamera", FreeCamera);
 }
 
@@ -83911,7 +84049,7 @@ var Player = class {
   yaw = 0;
   sensitivity = 1e-3;
   walkSpeed = 4.137;
-  gravity = 0.03;
+  gravity = 0.025;
   floor = 0;
   position = Vector3.Zero();
   velocity = Vector3.Zero();
@@ -83994,7 +84132,7 @@ scene.clearColor = new Color4(0.1, 0.1, 0.1, 1);
 var world = new World(scene);
 for (let x = -5; x < 6; x++) {
   for (let z = -5; z < 6; z++) {
-    world.addVoxel(new Vector3(x, -3, z), "../assets/grass.png" /* Grass */);
+    world.addVoxel(new Vector3(x, Math.floor(Math.random() * 3) + -3, z), "../assets/grass.png" /* Grass */);
   }
 }
 var player = new Player(canvas, scene, engine);

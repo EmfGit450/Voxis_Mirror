@@ -1,6 +1,7 @@
 import { Scene } from "@babylonjs/core/scene"
 
 import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
+import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
 
 import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
 
@@ -37,24 +38,29 @@ export class World {
   
     const sun = new DirectionalLight(
       "sun",
-      new Vector3(-1, -2, -1).normalize(),
+      new Vector3(0, -1, 0),
       this.scene
     );
     sun.intensity = 0.9;
 
+    const fill = new HemisphericLight(
+  "fill",
+  new Vector3(0, 1, 0),
+  this.scene
+);
+fill.intensity = 1;
+fill.groundColor = new Color3(0.2, 0.2, 0.2);
+
     this.voxelData = [];
 
-// Babylon box face order: +Z, -Z, +X, -X, +Y, -Y.
-this.voxelFaceUV = [
-  new Vector4(0.375, 0.50, 0.625, 0.75), // +Z — side1
-  new Vector4(0.375, 0.00, 0.625, 0.25), // -Z — side3
-  new Vector4(0.375, 0.25, 0.625, 0.50), // +X — side2
-  new Vector4(0.375, 0.75, 0.625, 1.00), // -X — side(topmost)
-  new Vector4(0.125, 0.50, 0.375, 0.75), // +Y — top
-  new Vector4(0.625, 0.50, 0.875, 0.75), // -Y — bottom
-];
-
-
+    this.voxelFaceUV = [
+      new Vector4(0.375, 0.50, 0.625, 0.75),
+      new Vector4(0.375, 0.00, 0.625, 0.25),
+      new Vector4(0.375, 0.25, 0.625, 0.50),
+      new Vector4(0.375, 0.75, 0.625, 1.00),
+      new Vector4(0.125, 0.50, 0.375, 0.75),
+      new Vector4(0.625, 0.50, 0.875, 0.75),
+    ];
 
     this.textures = new Map();
   }
