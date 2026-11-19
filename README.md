@@ -1,3 +1,3 @@
-# Cubeworld
+# Voxis
 
 A voxel game

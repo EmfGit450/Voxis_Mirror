@@ -29,13 +29,22 @@ export class Voxel {
 export class World {
   scene: Scene;
 
-  voxelData: Voxel[];
-  voxelFaceUV: Vector4[];
-  textures: Map<VoxelTexType, StandardMaterial>;
+  voxelData: Voxel[] = [];
+
+  voxelFaceUV: Vector4[] = [
+    new Vector4(0.375, 0.50, 0.625, 0.75),
+    new Vector4(0.375, 0.00, 0.625, 0.25),
+    new Vector4(0.375, 0.25, 0.625, 0.50),
+    new Vector4(0.375, 0.75, 0.625, 1.00),
+    new Vector4(0.125, 0.50, 0.375, 0.75),
+    new Vector4(0.625, 0.50, 0.875, 0.75),
+  ];
+
+  textures: Map<VoxelTexType, StandardMaterial> = new Map();
 
   constructor(scene: Scene) {
     this.scene = scene;
-  
+
     const sun = new DirectionalLight(
       "sun",
       new Vector3(0, -1, 0),
@@ -50,19 +59,6 @@ export class World {
 );
 fill.intensity = 1;
 fill.groundColor = new Color3(0.2, 0.2, 0.2);
-
-    this.voxelData = [];
-
-    this.voxelFaceUV = [
-      new Vector4(0.375, 0.50, 0.625, 0.75),
-      new Vector4(0.375, 0.00, 0.625, 0.25),
-      new Vector4(0.375, 0.25, 0.625, 0.50),
-      new Vector4(0.375, 0.75, 0.625, 1.00),
-      new Vector4(0.125, 0.50, 0.375, 0.75),
-      new Vector4(0.625, 0.50, 0.875, 0.75),
-    ];
-
-    this.textures = new Map();
   }
 
   addVoxel(position: Vector3, textype: VoxelTexType) {

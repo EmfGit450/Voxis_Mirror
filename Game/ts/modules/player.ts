@@ -8,10 +8,14 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 export class Player {
   bjsCamera: FreeCamera;
 
+  prevPointerPos: { x: number, y: number } | undefined;
+
   pitch: number = 0;
   yaw: number = 0;
 
-  sensitivity: number = 0.001;
+  fov: number = 100 * Math.PI / 180;
+
+  sensitivity: number = 0.002;
 
   walkSpeed: number = 4.137;
   gravity: number = 0.025;
@@ -30,6 +34,7 @@ export class Player {
 
   constructor(canvas: HTMLCanvasElement, scene: Scene, engine: Engine) {
     this.bjsCamera = new FreeCamera("camera", new Vector3(0, 0, -10), scene);
+    this.bjsCamera.fov = this.fov;
     this.bjsCamera.minZ = 0.1;
     this.bjsCamera.inputs.clear();
     scene.activeCamera = this.bjsCamera;
@@ -39,15 +44,28 @@ export class Player {
       if (document.pointerLockElement !== canvas) canvas.requestPointerLock();
     });
 
-    document.addEventListener("mousemove", (e) => {
-      if (document.pointerLockElement !== canvas) return;
+    document.addEventListener("pointermove", (e: PointerEvent) => {
+      if (this.prevPointerPos == undefined) {
+        this.prevPointerPos = { x: e.clientX, y: e.clientY };
+        return;
+      }
 
-      this.yaw += e.movementX * this.sensitivity;
-      this.pitch -= e.movementY * this.sensitivity;
+      const dx = e.clientX - this.prevPointerPos.x;
+      const dy = e.clientY - this.prevPointerPos.y;
+
+      this.yaw += dx * this.sensitivity;
+      this.pitch -= dy * this.sensitivity;
       this.pitch = Math.max(-1.5607963267948965, Math.min(1.5607963267948965, this.pitch));
 
       this.applyHeading();
+
+      this.prevPointerPos = { x: e.clientX, y: e.clientY };
     });
+
+    document.addEventListener("pointerup", () => {
+      this.prevPointerPos = undefined;
+    });
+
     //Looking End
 
     //Movement Start

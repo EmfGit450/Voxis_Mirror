@@ -81272,9 +81272,16 @@ RegisterTexture();
 // ts/modules/world.ts
 var World = class {
   scene;
-  voxelData;
-  voxelFaceUV;
-  textures;
+  voxelData = [];
+  voxelFaceUV = [
+    new Vector4(0.375, 0.5, 0.625, 0.75),
+    new Vector4(0.375, 0, 0.625, 0.25),
+    new Vector4(0.375, 0.25, 0.625, 0.5),
+    new Vector4(0.375, 0.75, 0.625, 1),
+    new Vector4(0.125, 0.5, 0.375, 0.75),
+    new Vector4(0.625, 0.5, 0.875, 0.75)
+  ];
+  textures = /* @__PURE__ */ new Map();
   constructor(scene2) {
     this.scene = scene2;
     const sun = new DirectionalLight(
@@ -81290,16 +81297,6 @@ var World = class {
     );
     fill.intensity = 1;
     fill.groundColor = new Color3(0.2, 0.2, 0.2);
-    this.voxelData = [];
-    this.voxelFaceUV = [
-      new Vector4(0.375, 0.5, 0.625, 0.75),
-      new Vector4(0.375, 0, 0.625, 0.25),
-      new Vector4(0.375, 0.25, 0.625, 0.5),
-      new Vector4(0.375, 0.75, 0.625, 1),
-      new Vector4(0.125, 0.5, 0.375, 0.75),
-      new Vector4(0.625, 0.5, 0.875, 0.75)
-    ];
-    this.textures = /* @__PURE__ */ new Map();
   }
   addVoxel(position, textype) {
     const cube = CreateBox("voxel", {
@@ -84045,9 +84042,11 @@ RegisterFreeCamera();
 // ts/modules/player.ts
 var Player = class {
   bjsCamera;
+  prevPointerPos;
   pitch = 0;
   yaw = 0;
-  sensitivity = 1e-3;
+  fov = 100 * Math.PI / 180;
+  sensitivity = 2e-3;
   walkSpeed = 4.137;
   gravity = 0.025;
   floor = 0;
@@ -84062,18 +84061,28 @@ var Player = class {
   };
   constructor(canvas2, scene2, engine2) {
     this.bjsCamera = new FreeCamera("camera", new Vector3(0, 0, -10), scene2);
+    this.bjsCamera.fov = this.fov;
     this.bjsCamera.minZ = 0.1;
     this.bjsCamera.inputs.clear();
     scene2.activeCamera = this.bjsCamera;
     canvas2.addEventListener("click", () => {
       if (document.pointerLockElement !== canvas2) canvas2.requestPointerLock();
     });
-    document.addEventListener("mousemove", (e) => {
-      if (document.pointerLockElement !== canvas2) return;
-      this.yaw += e.movementX * this.sensitivity;
-      this.pitch -= e.movementY * this.sensitivity;
+    document.addEventListener("pointermove", (e) => {
+      if (this.prevPointerPos == void 0) {
+        this.prevPointerPos = { x: e.clientX, y: e.clientY };
+        return;
+      }
+      const dx = e.clientX - this.prevPointerPos.x;
+      const dy = e.clientY - this.prevPointerPos.y;
+      this.yaw += dx * this.sensitivity;
+      this.pitch -= dy * this.sensitivity;
       this.pitch = Math.max(-1.5607963267948965, Math.min(1.5607963267948965, this.pitch));
       this.applyHeading();
+      this.prevPointerPos = { x: e.clientX, y: e.clientY };
+    });
+    document.addEventListener("pointerup", () => {
+      this.prevPointerPos = void 0;
     });
     document.addEventListener("keydown", (e) => {
       this.keys[e.code] = true;
