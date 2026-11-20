@@ -1,5 +1,6 @@
 function Error(message: string) {
   console.log(`[Voxis 0.1.0]: ERROR - ${message}`);
+  throw new Error(message);
 }
 
 
