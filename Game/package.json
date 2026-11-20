@@ -1,15 +1,11 @@
 {
-  "scripts": {
-    "serve": "python3 -m http.server 3141",
-    "watch": "node build.mjs --watch"
-  },
   "devDependencies": {
-    "@webgpu/types": "^0.1.74"
-  },
-  "dependencies": {
+    "@webgpu/types": "^0.1.74",
     "esbuild": "^0.28.2"
   },
-  "allowScripts": {
-    "esbuild@0.28.2": true
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "serve": "python3 -m http.server 3141"
   }
 }
