@@ -87,7 +87,7 @@ async function main() {
       module,
       buffers: [{
         arrayStride: 2 * 4, // 2 floats for one vertex, each float 4 bytes,
-        attributes: [{shaderLocation: 0, offset: 0, format: "float32x2"}]
+        attributes: [{ shaderLocation: 0, offset: 0, format: "float32x2" }]
       }]
     },
     fragment: {
@@ -98,10 +98,13 @@ async function main() {
   });
 
   const TEST_VERTICES = new Float32Array([
-    0.5, 0.5,
     -0.5, -0.5,
-    0.5, -0.5
-  ])
+    0.5, -0.5,
+    0.5,  0.5,
+    -0.5, -0.5,
+    0.5,  0.5,
+    -0.5,  0.5
+  ]);
 
   const vertexBuffer = device.createBuffer({
     label: "vertexBuffer",
@@ -131,7 +134,7 @@ async function main() {
     const pass = encoder.beginRenderPass(renderPassDescriptor);
     pass.setPipeline(pipeline);
     pass.setVertexBuffer(0, vertexBuffer);
-    pass.draw(3);  // call our vertex shader 3 times
+    pass.draw(TEST_VERTICES.length / 2);  // call our vertex shader 3 times
     pass.end();
 
     const commandBuffer = encoder.finish();
