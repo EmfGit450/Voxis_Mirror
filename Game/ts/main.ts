@@ -53,30 +53,42 @@ async function main() {
   const module = device.createShaderModule({
     label: 'our hardcoded red triangle shaders',
     code: /* wgsl */ `
-      @vertex fn vs(
-        @builtin(vertex_index) vertexIndex : u32
-      ) -> @builtin(position) vec4f {
-        let pos = array(
-          vec2f( 0.0,  0.5),  // top center
-          vec2f(-0.5, -0.5),  // bottom left
-          vec2f( 0.5, -0.5)   // bottom right
-        );
+      @group(0) @binding(0) var<storage, read_write> vertices: array<f32>;
 
-        return vec4f(pos[vertexIndex], 0.0, 1.0);
+      struct Vertex {
+        @location(0) position: vec2f
+      };
+      
+      struct VSOutput {
+        @builtin(position) position: vec4f,
+        @location(0) color: vec4f
+      };
+
+      @vertex fn vs(
+        vert: Vertex
+      ) -> VSOutput {
+        var vsOut: VSOutput;
+        vsOut.position = vec4f(vert.position, 0.0, 1.0);
+        vsOut.color = vec4f(1, 0.5, 1, 1);
+        return vsOut;
       }
 
-      @fragment fn fs() -> @location(0) vec4f {
-        return vec4f(1.0, 0.0, 0.0, 1.0);
+      @fragment fn fs(vsOut: VSOutput) -> @location(0) vec4f {
+        return vsOut.color;
       }
     `,
   });
 
   const pipeline = device.createRenderPipeline({
-    label: 'our hardcoded red triangle pipeline',
+    label: 'normal pipeline',
     layout: 'auto',
     vertex: {
       entryPoint: 'vs',
       module,
+      buffers: [{
+        arrayStride: 2 * 4, // 2 floats for one vertex, each float 4 bytes,
+        attributes: [{shaderLocation: 0, offset: 0, format: "float32x2"}]
+      }]
     },
     fragment: {
       entryPoint: 'fs',
@@ -85,13 +97,27 @@ async function main() {
     },
   });
 
+  const TEST_VERTICES = new Float32Array([
+    0.5, 0.5,
+    -0.5, -0.5,
+    0.5, -0.5
+  ])
+
+  const vertexBuffer = device.createBuffer({
+    label: "vertexBuffer",
+    size: TEST_VERTICES.byteLength,
+    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+  });
+
+  device.queue.writeBuffer(vertexBuffer, 0, TEST_VERTICES);
+
   function render() {
     const renderPassDescriptor: GPURenderPassDescriptor = {
-      label: 'our basic canvas renderPass',
+      label: 'basic canvas renderPass',
       colorAttachments: [
         {
           view: ctx.getCurrentTexture().createView(),
-          clearValue: [0.3, 0.3, 0.3, 1],
+          clearValue: [0, 0, 0, 1],
           loadOp: 'clear',
           storeOp: 'store',
         },
@@ -99,11 +125,12 @@ async function main() {
     };
 
     // make a command encoder to start encoding commands
-    const encoder = device.createCommandEncoder({ label: 'our encoder' });
+    const encoder = device.createCommandEncoder({ label: "command encoder" });
 
     // make a render pass encoder to encode render specific commands
     const pass = encoder.beginRenderPass(renderPassDescriptor);
     pass.setPipeline(pipeline);
+    pass.setVertexBuffer(0, vertexBuffer);
     pass.draw(3);  // call our vertex shader 3 times
     pass.end();
 
