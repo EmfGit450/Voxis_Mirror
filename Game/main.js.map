@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["ts/main.ts"],
+  "sourcesContent": ["async function main() {\n  const adapter = await navigator.gpu?.requestAdapter();\n  if (navigator.gpu !== undefined) {\n    \n  }\n  const device = await adapter?.requestDevice();\n  if (!device) {\n    fail(\"\");\n    return;\n  }\n}\nmain();"],
+  "mappings": "AAAA,eAAeA,GAAO,CACpB,IAAMC,EAAU,MAAM,UAAU,KAAK,eAAe,EAKpD,GAJI,UAAU,IAIV,CADW,MAAMA,GAAS,cAAc,EAC/B,CACX,KAAK,EAAE,EACP,MACF,CACF,CACAD,EAAK",
+  "names": ["main", "adapter"]
+}

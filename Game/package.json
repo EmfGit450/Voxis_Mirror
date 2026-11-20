@@ -1,9 +1,15 @@
 {
   "scripts": {
     "serve": "python3 -m http.server 3141",
-    "watch": "esbuild ts/main.ts --bundle --platform=browser --format=esm --outdir=. --watch"
+    "watch": "node build.mjs --watch"
   },
   "devDependencies": {
+    "@webgpu/types": "^0.1.74"
+  },
+  "dependencies": {
     "esbuild": "^0.28.2"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
   }
 }
