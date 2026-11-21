@@ -1,26 +1,25 @@
-var a=Object.freeze({TerminatingError:t=>{throw new window.Error(`Voxis cannot be executed - ${t}`)},NonTerminatingError:t=>{console.error(`[Voxis 0.1.0]: ERROR - ${t}`)},Log:t=>{console.log(`[Voxis 0.1.0]: INFO - ${t}`)}});async function v(){navigator.gpu===void 0&&a.TerminatingError("navigator.gpu is undefined");let t=await navigator.gpu.requestAdapter();t||a.TerminatingError(`adapter is ${t}`);let e=await t.requestDevice();return e||a.TerminatingError(`device is ${e}`),e.lost.then(o=>{a.NonTerminatingError(`device was lost -- ${o.message}`),o.reason!=="destroyed"&&v()}),{adapter:t,device:e}}async function x(){let{adapter:t,device:e}=await v();window.d=e,window.a=t;let o=document.getElementById("renderCanvas"),u=o.getContext("webgpu"),d=navigator.gpu.getPreferredCanvasFormat();u.configure({device:e,format:d});let f=e.createShaderModule({label:"our hardcoded red triangle shaders",code:`
-      @group(0) @binding(0) var<storage, read_write> vertices: array<f32>;
+var n=Object.freeze({TerminatingError:r=>{throw new window.Error(`Voxis cannot be executed - ${r}`)},NonTerminatingError:r=>{console.error(`[Voxis 0.1.0]: ERROR - ${r}`)},Log:r=>{console.log(`[Voxis 0.1.0]: INFO - ${r}`)}});var l=`
+  struct Vertex {
+    @location(0) pos: vec3f,
+    @location(1) color: vec3f
+  }
 
-      struct Vertex {
-        @location(0) position: vec2f
-      };
-      
-      struct VSOutput {
-        @builtin(position) position: vec4f,
-        @location(0) color: vec4f
-      };
+  struct VSOutput {
+    @builtin(position) pos: vec4f,
+    @location(0) color: vec4f
+  }
 
-      @vertex fn vs(
-        vert: Vertex
-      ) -> VSOutput {
-        var vsOut: VSOutput;
-        vsOut.position = vec4f(vert.position, 0.0, 1.0);
-        vsOut.color = vec4f(1, 0.5, 1, 1);
-        return vsOut;
-      }
+  @vertex
+  fn vs(vert: Vertex) -> VSOutput {
+    var vsOut: VSOutput;
+    vsOut.pos = vec4f(vert.pos, 1.0);
+    vsOut.color = vec4f(vert.color, 1.0);
+    return vsOut;
+  }
 
-      @fragment fn fs(vsOut: VSOutput) -> @location(0) vec4f {
-        return vsOut.color;
-      }
-    `}),g=e.createRenderPipeline({label:"normal pipeline",layout:"auto",vertex:{entryPoint:"vs",module:f,buffers:[{arrayStride:8,attributes:[{shaderLocation:0,offset:0,format:"float32x2"}]}]},fragment:{entryPoint:"fs",module:f,targets:[{format:d}]}}),i=new Float32Array([-.5,-.5,.5,-.5,.5,.5,-.5,-.5,.5,.5,-.5,.5]),l=e.createBuffer({label:"vertexBuffer",size:i.byteLength,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});e.queue.writeBuffer(l,0,i);function m(){let s={label:"basic canvas renderPass",colorAttachments:[{view:u.getCurrentTexture().createView(),clearValue:[0,0,0,1],loadOp:"clear",storeOp:"store"}]},n=e.createCommandEncoder({label:"command encoder"}),r=n.beginRenderPass(s);r.setPipeline(g),r.setVertexBuffer(0,l),r.draw(i.length/2),r.end();let c=n.finish();e.queue.submit([c])}new ResizeObserver(s=>{for(let n of s){let r=n.target,c=n.contentBoxSize[0].inlineSize,p=n.contentBoxSize[0].blockSize;r.width=Math.max(1,Math.min(c,e.limits.maxTextureDimension2D)),r.height=Math.max(1,Math.min(p,e.limits.maxTextureDimension2D))}m()}).observe(o)}x();
+  @fragment
+  fn fs(vsOut: VSOutput) -> @location(0) vec4f {
+    return vsOut.color;
+  }
+`;var a=class{canvas;ctx;adapter;device;renderPassDescriptor;shaderModules;pipelines;prevTime=null;deltaFrameTime=null;vB;constructor(e){this.canvas=e,this.ctx=e.getContext("webgpu")}async init(){this.adapter=await this.initAdapter(),this.device=await this.initDevice(this.adapter);let e=navigator.gpu.getPreferredCanvasFormat();this.ctx.configure({device:this.device,format:e});let t=this.device.createShaderModule({label:"triangle mesh shader module",code:l});this.shaderModules={triangle:t};let i=this.device.createRenderPipeline({label:"triangle mesh pipeline",layout:"auto",vertex:{module:this.shaderModules.triangle,buffers:[{arrayStride:24,attributes:[{shaderLocation:0,offset:0,format:"float32x3"},{shaderLocation:1,offset:12,format:"float32x3"}]}]},fragment:{module:t,targets:[{format:e}]}});this.pipelines={triangle:i};let o=new Float32Array([-.5,-.5,0,1,0,0,.5,-.5,0,0,1,0,0,.5,0,0,0,1]);this.vB=this.device.createBuffer({label:"triangle mesh vertex buffer",size:o.byteLength,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST}),this.device.queue.writeBuffer(this.vB,0,o),this.renderPassDescriptor={label:"renderPassDescriptor for triangle meshes",colorAttachments:[{view:this.ctx.getCurrentTexture().createView(),clearValue:[0,0,0,1],loadOp:"clear",storeOp:"store"}]},new ResizeObserver(u=>{for(let s of u){let c=s.target,v=s.contentBoxSize[0].inlineSize,m=s.contentBoxSize[0].blockSize,d=window.devicePixelRatio??1;c.width=Math.max(1,Math.min(v*d,this.device.limits.maxTextureDimension2D)),c.height=Math.max(1,Math.min(m*d,this.device.limits.maxTextureDimension2D))}}).observe(this.canvas)}render(){this.renderPassDescriptor.colorAttachments[0].view=this.ctx.getCurrentTexture().createView();let e=this.device.createCommandEncoder({label:"command encoder"}),t=e.beginRenderPass(this.renderPassDescriptor);t.setPipeline(this.pipelines.triangle),t.setVertexBuffer(0,this.vB),t.draw(3),t.end();let i=e.finish();this.device.queue.submit([i])}frame=()=>{this.render();let e=performance.now();this.deltaFrameTime=performance.now()-this.prevTime,this.prevTime=e,requestAnimationFrame(this.frame)};runRenderLoop(){this.prevTime=performance.now(),requestAnimationFrame(this.frame)}async initAdapter(){navigator.gpu===void 0&&n.TerminatingError("navigator.gpu is undefined");let e=await navigator.gpu.requestAdapter();return e||n.TerminatingError(`adapter is ${e}`),e}async initDevice(e){let t=await e.requestDevice();return t||n.TerminatingError(`device is ${t}`),t.lost.then(i=>{n.NonTerminatingError(`device was lost -- ${i.message}`),i.reason!=="destroyed"&&init()}),t}};async function p(){let r=document.getElementById("renderCanvas"),e=new a(r);await e.init(),e.runRenderLoop()}p();
 //# sourceMappingURL=main.js.map
