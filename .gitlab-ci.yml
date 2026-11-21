@@ -2,7 +2,7 @@ pages:
   stage: deploy
   script:
   - mkdir -p public
-  - cp -r Game/* public/
+  - cp -r Game/dist/* public/
   artifacts:
     paths:
       - public
