@@ -6,6 +6,8 @@ async function main() {
   const renderer = new Renderer(canvas);
   await renderer.init();
 
-  renderer.runRenderLoop();
+  renderer.startRenderLoop();
+
+  console.log(renderer.device, renderer.adapter);
 }
 main();

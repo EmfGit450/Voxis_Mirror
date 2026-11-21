@@ -20,5 +20,6 @@ export const basicShader = `
   @fragment
   fn fs(vsOut: VSOutput) -> @location(0) vec4f {
     return vsOut.color;
+    return vsOut.color;
   }
 `;

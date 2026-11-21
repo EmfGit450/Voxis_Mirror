@@ -42,10 +42,14 @@ export class Renderer {
       format: presentationFormat
     });
 
+    App.Log("Configured GPUCanvasContext");
+
     const triangleShaderModule = this.device.createShaderModule({
       label: "triangle mesh shader module",
       code: basicShader
     });
+
+    App.Log("Created triangle shader module");
 
     this.shaderModules = {
       triangle: triangleShaderModule,
@@ -70,6 +74,8 @@ export class Renderer {
       }
     });
 
+    App.Log("Created triangle rendering pipeline");
+
     this.pipelines = {
       triangle: trianglePipeline
     };
@@ -83,7 +89,7 @@ export class Renderer {
 
     this.vB = this.device.createBuffer({
       label: "triangle mesh vertex buffer",
-      size: TEST_VERTICES.byteLength,
+      size: 4096,
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
     });
 
@@ -100,6 +106,8 @@ export class Renderer {
         },
       ],
     }
+
+    App.Log("Created render pass descriptor");
 
     const observer = new ResizeObserver(entries => {
       for (const entry of entries) {
@@ -141,7 +149,9 @@ export class Renderer {
     requestAnimationFrame(this.frame);
   }
 
-  runRenderLoop() {
+  startRenderLoop() {
+    App.Log("Starting render loop");
+
     this.prevTime = performance.now();
     requestAnimationFrame(this.frame);
   }
