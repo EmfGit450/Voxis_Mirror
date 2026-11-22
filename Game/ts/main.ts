@@ -1,4 +1,4 @@
-import { Renderer } from "./renderer"
+import { Renderer } from "./webgpu/renderer"
 
 async function main() {
   const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;

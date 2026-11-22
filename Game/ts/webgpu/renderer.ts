@@ -1,4 +1,6 @@
-import { App } from "./declarations"
+import { App } from "../declarations"
+
+import { World } from "../world";
 
 import { basicShader } from "./shaders"
 
@@ -6,34 +8,38 @@ export class Renderer {
   canvas: HTMLCanvasElement;
   ctx: GPUCanvasContext;
 
-  adapter: GPUAdapter;
-  device: GPUDevice;
+  adapter!: GPUAdapter;
+  device!: GPUDevice;
 
-  renderPassDescriptor: GPURenderPassDescriptor;
+  renderPassDescriptor!: GPURenderPassDescriptor;
 
-  shaderModules: {
+  shaderModules!: {
     triangle: GPUShaderModule;
     //voxel: GPUShaderModule;
   };
 
-  pipelines: {
+  pipelines!: {
     triangle: GPURenderPipeline;
     //voxel: GPURenderPipeline;
   };
+
+  world: World;
 
   prevTime: number | null = null;
   deltaFrameTime: number | null = null;
 
   //Test
-  vB: GPUBuffer;
+  vB!: GPUBuffer;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, world: World) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("webgpu") as GPUCanvasContext;
+
+    this.world = world;
   }
 
   async init() {
-    this.adapter = await this.initAdapter();
+    this.adapter = await this.initAdapter() as GPUAdapter;
     this.device = await this.initDevice(this.adapter);
 
     const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
@@ -81,15 +87,18 @@ export class Renderer {
     };
 
     const TEST_VERTICES = new Float32Array([
-  // x,    y,    z,     r,   g,   b
-  -0.5, -0.5,  0.0,   1.0, 0.0, 0.0,  // Bottom Left (Red)
-   0.5, -0.5,  0.0,   0.0, 1.0, 0.0,  // Bottom Right (Green)
-   0.0,  0.5,  0.0,   0.0, 0.0, 1.0,  // Top Middle (Blue)
-]);
+      // x,    y,    z,     r,   g,   b
+      -0.5, -0.5,  0.0,   1.0, 0.0, 0.0,
+      0.5, -0.5,  0.0,   0.0, 1.0, 0.0,
+      0.5,  0.5,  0.0,   0.0, 0.0, 1.0,
+      0.5,  0.5,  0.0,   0.0, 0.0, 1.0,
+      -0.5,  0.5,  0.0,   0.0, 1.0, 0.0,
+      -0.5, -0.5,  0.0,   1.0, 0.0, 0.0,
+    ]);
 
     this.vB = this.device.createBuffer({
       label: "triangle mesh vertex buffer",
-      size: 4096,
+      size: 24000,
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
     });
 
@@ -125,14 +134,15 @@ export class Renderer {
   }
 
   render() {
-    this.renderPassDescriptor.colorAttachments[0].view = this.ctx.getCurrentTexture().createView();
+    const firstAttachment = this.renderPassDescriptor.colorAttachments[Symbol.iterator]().next().value;
+    firstAttachment.view  = this.ctx.getCurrentTexture().createView() as GPUTextureView;
 
     const encoder = this.device.createCommandEncoder({ label: "command encoder" });
 
     const pass = encoder.beginRenderPass(this.renderPassDescriptor);
     pass.setPipeline(this.pipelines.triangle);
     pass.setVertexBuffer(0, this.vB);
-    pass.draw(3);
+    pass.draw(6);
     pass.end();
 
     const commandBuffer = encoder.finish();
@@ -143,7 +153,7 @@ export class Renderer {
     this.render();
 
     const now = performance.now();
-    this.deltaFrameTime = performance.now() - this.prevTime;
+    this.deltaFrameTime = performance.now() - this.prevTime!;
     this.prevTime = now;
 
     requestAnimationFrame(this.frame);
@@ -181,7 +191,9 @@ export class Renderer {
       App.NonTerminatingError(`device was lost -- ${info.message}`);
 
       if (info.reason !== 'destroyed') {
-        init();
+        void this.initDevice(adapter).catch((err) => {
+          App.NonTerminatingError(`device reinitialization failed -- ${err}`);
+        });
       }
     });
 

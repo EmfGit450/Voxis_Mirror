@@ -1,4 +1,5 @@
 export const basicShader = `
+  @
   struct Vertex {
     @location(0) pos: vec3f,
     @location(1) color: vec3f
