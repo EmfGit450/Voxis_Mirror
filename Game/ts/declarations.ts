@@ -8,13 +8,12 @@ const systime = () => {
 }
 
 export const App = Object.freeze({
-  TerminatingError: (message: string): never => {
-    throw new window.Error(`Voxis cannot be executed - ${message}`);
+  Error: (message: string): never => {
+    throw new window.Error(`[Voxis 0.1.0] | ${systime()} : ERROR - ${message}`);
   },
-  NonTerminatingError: (message: string) => {
-    console.error(`[Voxis 0.1.0] | ${systime()} : ERROR - ${message}`);
+  Warning: (message: string) => {
+    console.warn(`[Voxis 0.1.0] | ${systime()} : ERROR - ${message}`);
   },
-
   Log: (message: string) => {
     console.log(`[Voxis 0.1.0] | ${systime()} : INFO - ${message}`);
   }
