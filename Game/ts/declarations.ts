@@ -12,7 +12,7 @@ export const App = Object.freeze({
     throw new window.Error(`[Voxis 0.1.0] | ${systime()} : ERROR - ${message}`);
   },
   Warning: (message: string) => {
-    console.warn(`[Voxis 0.1.0] | ${systime()} : ERROR - ${message}`);
+    console.warn(`[Voxis 0.1.0] | ${systime()} : WARNING - ${message}`);
   },
   Log: (message: string) => {
     console.log(`[Voxis 0.1.0] | ${systime()} : INFO - ${message}`);

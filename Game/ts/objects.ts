@@ -1,6 +1,8 @@
 import { type Vector3 } from "./math";
 
 export class MeshData {
+  name: string;
+
   vertexCount: number;
   vertices: Float32Array;
 
@@ -17,7 +19,9 @@ export class MeshData {
                   z is the pitch
   */
 
-  constructor(vertexCount: number) {
+  constructor(name: string, vertexCount: number) {
+    this.name = name;
+
     this.vertexCount = vertexCount;
     this.vertices = new Float32Array(vertexCount * 6); //6 floats per vertex
 

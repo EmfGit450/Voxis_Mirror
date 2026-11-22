@@ -1,7 +1,7 @@
 import { type Vector3 } from "./math";
 
 export class Camera {
-  verticalFov: number = 60;
+  verticalFov: number = 60 * Math.PI / 180;
   viewportAspectRatio: number = 1;
   
   near: number = 0.1;

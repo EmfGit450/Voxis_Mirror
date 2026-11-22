@@ -1,4 +1,6 @@
-import { MeshData, VoxelData } from "./objects"
+import { App } from "./declarations";
+
+import { MeshData } from "./objects"
 import { Renderer } from "./webgpu/renderer";
 import { Camera } from "./camera";
 
@@ -24,5 +26,8 @@ export class World {
   addMesh(mesh: MeshData) {
     this.meshes.push(mesh);
     mesh.initializeWorldMatrixBuffer(this.renderer.device);
+    this.renderer.writeToVertexBuffer(mesh.vertices as Float32Array<ArrayBuffer>);
+
+    App.Log(`Added mesh '${mesh.name}' to world`);
   }
 }

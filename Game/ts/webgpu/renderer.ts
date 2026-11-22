@@ -46,6 +46,13 @@ export class Renderer {
     this.adapter = await this.initAdapter() as GPUAdapter;
     this.device = await this.initDevice(this.adapter);
 
+    this.device.addEventListener?.("uncapturederror", (e) => {
+      App.Warning(e.error.message);
+    });
+    this.device.onuncapturederror = (e) => {
+      App.Warning(e.error.message);
+    };
+
     const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
     this.ctx.configure({
       device: this.device,
@@ -123,6 +130,8 @@ export class Renderer {
       ]
     });
 
+    App.Log("Created bind group for matrices");
+
     this.renderPassDescriptor = {
       label: 'renderPassDescriptor for triangle meshes',
       colorAttachments: [
@@ -193,6 +202,13 @@ export class Renderer {
 
     this.prevTime = performance.now();
     requestAnimationFrame(this.frame);
+  }
+
+  writeToVertexBuffer(data: Float32Array<ArrayBuffer>) {
+    this.device.queue.writeBuffer(this.vertexBuffer, this.vertexBufferByteSize, data);
+    this.vertexBufferByteSize += data.byteLength;
+
+    App.Log(`Wrote ${data.byteLength} bytes to renderer's vertex buffer`);
   }
 
   private async initAdapter() {
