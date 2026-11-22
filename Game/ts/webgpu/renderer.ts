@@ -1,7 +1,5 @@
 import { App } from "../declarations"
 
-import { World } from "../world";
-
 import { basicShader } from "./shaders"
 
 export class Renderer {
@@ -23,19 +21,15 @@ export class Renderer {
     //voxel: GPURenderPipeline;
   };
 
-  world: World;
-
   prevTime: number | null = null;
   deltaFrameTime: number | null = null;
 
   //Test
   vB!: GPUBuffer;
 
-  constructor(canvas: HTMLCanvasElement, world: World) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("webgpu") as GPUCanvasContext;
-
-    this.world = world;
   }
 
   async init() {

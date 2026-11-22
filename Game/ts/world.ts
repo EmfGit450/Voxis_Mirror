@@ -1,17 +1,22 @@
 import { type Matrix4, createMatrix4 } from "./math";
 import { MeshData, VoxelData } from "./objects"
+import { Renderer } from "./webgpu/renderer";
 import { Camera } from "./camera";
 
 export class World {
   meshes: MeshData[] = [];
   //voxelObjects: VoxelData[] = [];
 
+  renderer: Renderer;
+
   camera: Camera;
 
   viewMatrix: Matrix4;
 
-  constructor() {
-    this.camera = new Camera({ x: 0, y: 0, z: 0 });
+  constructor(renderer: Renderer) {
+    this.renderer = renderer;
+
+    this.camera = new Camera(renderer.canvas.width / renderer.canvas.height, { x: 0, y: 0, z: 0 });
 
     this.viewMatrix = createMatrix4();
     
