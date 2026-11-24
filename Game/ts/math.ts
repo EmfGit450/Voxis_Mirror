@@ -4,6 +4,17 @@ export type Vector3 = {
   z: number;
 };
 
+export function dot(vec1: Vector3, vec2: Vector3) {
+  return vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z;
+}
+
+
+export function prettyPrintMat4x4(matrix: Float32Array) {
+  console.log(`${matrix[0]}, ${matrix[1]}, ${matrix[2]}, ${matrix[3]},\n;
+               ${matrix[4]}, ${matrix[5]}, ${matrix[6]}, ${matrix[7]},\n
+               ${matrix[8]}, ${matrix[9]}, ${matrix[10]}, ${matrix[11]},\n
+               ${matrix[12]}, ${matrix[13]}, ${matrix[14]}, ${matrix[15]}`);
+}
 
 export function matmul4x4(mat1: Float32Array, mat2: Float32Array) {
   let result = new Float32Array(16);

@@ -15,11 +15,11 @@ export class World {
   constructor(renderer: Renderer) {
     this.renderer = renderer;
 
-    this.camera = new Camera(renderer.canvas.width / renderer.canvas.height, { x: 0, y: 0, z: 0 });
+    this.camera = new Camera(this, { x: 0, y: 0, z: 0 });
 
     renderer.world = this;
 
-    renderer.device.queue.writeBuffer(renderer.cameraMatrixBuffer, 0, this.camera.viewMatrix);
+    renderer.device.queue.writeBuffer(renderer.cameraMatrixBuffer, 0, this.camera.cameraMatrix);
     renderer.device.queue.writeBuffer(renderer.projectionMatrixBuffer, 0, this.camera.projectionMatrix);
   }
 

@@ -181,7 +181,7 @@ export class Renderer {
 
   startRenderLoop(beforeFrameCallback: () => void) {
     if (!this.world) {
-      App.Error("world for the called renderer is not defined");
+      App.Error("world for the renderer is not defined");
     }
     
     this.beforeFrameCallback = beforeFrameCallback;
@@ -224,6 +224,11 @@ export class Renderer {
     });
 
     return device;
+  }
+
+  updateCameraMatrixBuffer() {
+    if (!this.world) App.Error("world for the renderer is undefined");
+    this.device.queue.writeBuffer(this.cameraMatrixBuffer, 0, this.world!.camera.cameraMatrix);
   }
 
   private getMatrixBindGroup(mesh: MeshData) {
