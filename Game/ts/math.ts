@@ -9,6 +9,10 @@ export function dot(vec1: Vector3, vec2: Vector3) {
 }
 
 
+/*
+  Matrices are stored in column major
+*/
+
 export function prettyPrintMat4x4(matrix: Float32Array) {
   console.log(`${matrix[0]}, ${matrix[1]}, ${matrix[2]}, ${matrix[3]},\n;
                ${matrix[4]}, ${matrix[5]}, ${matrix[6]}, ${matrix[7]},\n
