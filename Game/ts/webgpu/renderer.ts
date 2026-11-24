@@ -1,4 +1,5 @@
 import { App } from "../declarations"
+import { type MeshData } from "../objects";
 import { World } from "../world";
 
 import { basicShader } from "./shaders"
@@ -24,11 +25,10 @@ export class Renderer {
 
   world: World | undefined = undefined;
 
-  activeWorldMatrix!: GPUBuffer;
   cameraMatrixBuffer!: GPUBuffer;
   projectionMatrixBuffer!: GPUBuffer;
 
-  matricesBindGroup!: GPUBindGroup;
+  matrixBindGroups!: Map<MeshData, GPUBindGroup>;
 
   prevTime: number | null = null;
   deltaFrameTime: number | null = null;
@@ -96,11 +96,6 @@ export class Renderer {
     };
 
 
-    this.activeWorldMatrix = this.device.createBuffer({
-      size: 16 * 4,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-    });
-
     this.cameraMatrixBuffer = this.device.createBuffer({
       size: 16 * 4,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
@@ -111,17 +106,7 @@ export class Renderer {
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
 
-    this.matricesBindGroup = this.device.createBindGroup({
-      label: "bind group for matrices",
-      layout: this.pipelines.triangle.getBindGroupLayout(0),
-      entries: [
-        { binding: 0, resource: this.activeWorldMatrix },
-        { binding: 1, resource: this.cameraMatrixBuffer },
-        { binding: 2, resource: this.projectionMatrixBuffer }
-      ]
-    });
-
-    App.Log("Created bind group for matrices");
+    this.matrixBindGroups = new Map();
 
     this.renderPassDescriptor = {
       label: 'renderPassDescriptor for triangle meshes',
@@ -166,11 +151,11 @@ export class Renderer {
 
     const pass = encoder.beginRenderPass(this.renderPassDescriptor);
     pass.setPipeline(this.pipelines.triangle);
-    pass.setBindGroup(0, this.matricesBindGroup);
+    
 
     for (let i = 0; i < this.world!.meshes.length; i++) {
       const mesh = this.world!.meshes[i]!;
-      this.device.queue.writeBuffer(this.activeWorldMatrix, 0, mesh.worldMatrix);
+      pass.setBindGroup(0, this.getMatrixBindGroup(mesh));
       pass.setVertexBuffer(0, mesh.vertexBuffer);
       pass.draw(mesh.vertexCount);
 
@@ -240,5 +225,23 @@ export class Renderer {
     });
 
     return device;
+  }
+
+  private getMatrixBindGroup(mesh: MeshData) {
+    if (this.matrixBindGroups.get(mesh)) {
+      return this.matrixBindGroups.get(mesh);
+    }
+
+    const bindGroup = this.device.createBindGroup({
+      label: "bind group for matrices",
+      layout: this.pipelines.triangle.getBindGroupLayout(0),
+      entries: [
+        { binding: 0, resource: mesh.worldMatrixBuffer },
+        { binding: 1, resource: this.cameraMatrixBuffer },
+        { binding: 2, resource: this.projectionMatrixBuffer }
+      ]
+    });
+    this.matrixBindGroups.set(mesh, bindGroup);
+    return bindGroup;
   }
 }

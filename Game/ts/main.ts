@@ -53,14 +53,14 @@ async function main() {
 
   mesh1.updateVertices(cubeVertices(0.3, 0.3, 1.0));
 
-  mesh1.translation = { x: 0, y: 0, z: -3 };
+  mesh1.translation = { x: -1, y: 0, z: -3 };
   mesh1.updateWorldMatrix();
 
   const mesh2 = new MeshData("test2", 36, world);
 
-  mesh2.updateVertices(cubeVertices(1.0, 0.4, 0.5));
+  mesh2.updateVertices(cubeVertices(1.0, 0.2, 0.2));
 
-  mesh2.translation = { x: 3, y: 0, z: -3 };
+  mesh2.translation = { x: 1, y: 0, z: -3 };
   mesh2.updateWorldMatrix();
 
   renderer.startRenderLoop(() => {
@@ -68,6 +68,10 @@ async function main() {
     mesh1.rotation.y += 0.01;
 
     mesh1.updateWorldMatrix();
+
+    mesh2.rotation.y += 0.01;
+
+    mesh2.updateWorldMatrix();
   });
 
   console.log(renderer.device, renderer.adapter);
