@@ -74,6 +74,25 @@ async function main() {
     mesh2.updateWorldMatrix();
   });
 
+  window.addEventListener("keydown", (e) => {
+    if (e.key == "w") {
+      world.camera.position.z -= 0.2;
+      world.camera.updateCameraMatrix();
+    }
+    if (e.key == "s") {
+      world.camera.position.z += 0.2;
+      world.camera.updateCameraMatrix();
+    }
+    if (e.key == "a") {
+      world.camera.position.x -= 0.2;
+      world.camera.updateCameraMatrix();
+    }
+    if (e.key == "d") {
+      world.camera.position.x += 0.2;
+      world.camera.updateCameraMatrix();
+    }
+  })
+
   console.log(renderer.device, renderer.adapter);
 }
 main();
