@@ -1,7 +1,6 @@
 import {
   type Vector3,
-  dot,
-  negative
+  dot
 } from "./math";
 import { World } from "./world";
 
