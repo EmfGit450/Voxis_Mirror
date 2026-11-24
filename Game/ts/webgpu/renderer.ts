@@ -155,11 +155,10 @@ export class Renderer {
 
     for (let i = 0; i < this.world!.meshes.length; i++) {
       const mesh = this.world!.meshes[i]!;
+
       pass.setBindGroup(0, this.getMatrixBindGroup(mesh));
       pass.setVertexBuffer(0, mesh.vertexBuffer);
       pass.draw(mesh.vertexCount);
-
-      App.Log(`drew ${mesh}`)
     }
 
     pass.end();
