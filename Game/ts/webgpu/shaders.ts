@@ -25,30 +25,8 @@ export const basicShader = `
     return vsOut;
   }
   
-  fn hash(x_in: u32) -> u32 {
-    var x = x_in;
-    x ^= x >> 16u;
-    x *= 0x7feb352du;
-    x ^= x >> 15u;
-    x *= 0x846c98bu;
-    x ^= x >> 16u;
-    return x;
-}
-
-fn random_color(seed: u32) -> vec4f {
-    let r = f32(hash(seed)) / 4294967296.0;
-    let g = f32(hash(seed + 1u)) / 4294967296.0;
-    let b = f32(hash(seed + 2u)) / 4294967296.0;
-    return vec4f(r, g, b, 1);
-}
-
- @fragment
-fn fs(@builtin(position) position: vec4f) -> @location(0) vec4f {
-    let x = u32(position.x);
-    let y = u32(position.y);
-    let seed = x ^ (y * 0x9e3779b9u);
-
-    return vec4f(random_color(seed));
-}
-
+  @fragment
+  fn fs(vsOut: VSOutput) -> @location(0) vec4f {
+    return vsOut.color;
+  }
 `;
