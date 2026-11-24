@@ -12,7 +12,7 @@ export class Camera {
   projectionMatrix: Float32Array<ArrayBuffer>;
   viewMatrix: Float32Array<ArrayBuffer>;
 
-  constructor(aspectRatio: number, worldPos: Vector3 = { x: 0, y: 0, z: 0}) {
+  constructor(aspectRatio: number, worldPos: Vector3 = { x: 0, y: 0, z: 0 }) {
     this.viewportAspectRatio = aspectRatio;
 
     this.worldPos = worldPos;

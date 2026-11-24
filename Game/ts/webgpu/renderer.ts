@@ -173,6 +173,8 @@ export class Renderer {
       this.device.queue.writeBuffer(this.activeWorldMatrix, 0, mesh.worldMatrix);
       pass.setVertexBuffer(0, mesh.vertexBuffer);
       pass.draw(mesh.vertexCount);
+
+      App.Log(`drew ${mesh}`)
     }
 
     pass.end();

@@ -51,6 +51,12 @@ export class MeshData {
     world.addMesh(this);
   }
 
+  destroy(){
+    this.vertexBuffer.destroy();
+    this.worldMatrixBuffer.destroy();
+    this.world.meshes = this.world.meshes.filter(mesh => mesh != this);
+  }
+
   initializeWorldMatrixBuffer(device: GPUDevice) {
     this.worldMatrixBuffer = device.createBuffer({
       size: 16 * 4,
@@ -74,6 +80,7 @@ export class MeshData {
       App.Error("vertices' length is divisible by 6");
     }
 
+    this.vertexCount = vertices.length / 6;
     this.vertices = vertices;
 
     this.world.reinitVertexBuffer(this);
