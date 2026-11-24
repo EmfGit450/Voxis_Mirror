@@ -33,9 +33,7 @@ export class Renderer {
   prevTime: number | null = null;
   deltaFrameTime: number | null = null;
 
-  //Test
-  vertexBuffer!: GPUBuffer;
-  vertexBufferByteSize: number = 0;
+  beforeFrameCallback: () => void = () => {}; //runs before a frame every frame
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -98,13 +96,6 @@ export class Renderer {
     };
 
 
-    this.vertexBuffer = this.device.createBuffer({
-      label: "triangle mesh vertex buffer",
-      size: 240,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
-    });
-
-
     this.activeWorldMatrix = this.device.createBuffer({
       size: 16 * 4,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
@@ -156,6 +147,12 @@ export class Renderer {
 
         canvas.width = Math.max(1, Math.min(width * dpr, this.device.limits.maxTextureDimension2D));
         canvas.height = Math.max(1, Math.min(height * dpr, this.device.limits.maxTextureDimension2D));
+
+        if (this.world) {
+          this.world.camera.viewportAspectRatio = canvas.width / canvas.height;
+          this.world.camera.updateProjectionMatrix();
+          this.device.queue.writeBuffer(this.projectionMatrixBuffer, 0, this.world.camera.projectionMatrix);
+        }
       }
     });
     observer.observe(this.canvas);
@@ -170,11 +167,11 @@ export class Renderer {
     const pass = encoder.beginRenderPass(this.renderPassDescriptor);
     pass.setPipeline(this.pipelines.triangle);
     pass.setBindGroup(0, this.matricesBindGroup);
-    pass.setVertexBuffer(0, this.vertexBuffer);
 
     for (let i = 0; i < this.world!.meshes.length; i++) {
       const mesh = this.world!.meshes[i]!;
       this.device.queue.writeBuffer(this.activeWorldMatrix, 0, mesh.worldMatrix);
+      pass.setVertexBuffer(0, mesh.vertexBuffer);
       pass.draw(mesh.vertexCount);
     }
 
@@ -185,6 +182,8 @@ export class Renderer {
   }
 
   private frame = () => {
+    this.beforeFrameCallback();
+    
     this.render();
 
     const now = performance.now();
@@ -194,21 +193,17 @@ export class Renderer {
     requestAnimationFrame(this.frame);
   }
 
-  startRenderLoop() {
+  startRenderLoop(beforeFrameCallback: () => void) {
     if (!this.world) {
       App.Error("world for the called renderer is not defined");
     }
+    
+    this.beforeFrameCallback = beforeFrameCallback;
+
     App.Log("Starting render loop");
 
     this.prevTime = performance.now();
     requestAnimationFrame(this.frame);
-  }
-
-  writeToVertexBuffer(data: Float32Array<ArrayBuffer>) {
-    this.device.queue.writeBuffer(this.vertexBuffer, this.vertexBufferByteSize, data);
-    this.vertexBufferByteSize += data.byteLength;
-
-    App.Log(`Wrote ${data.byteLength} bytes to renderer's vertex buffer`);
   }
 
   private async initAdapter() {

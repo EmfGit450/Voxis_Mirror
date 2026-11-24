@@ -51,4 +51,10 @@ export class Camera {
 
     this.viewMatrix[15] = 1;
   }
+
+  updateProjectionMatrix() {
+    const tanThetaBy2 = Math.tan(this.verticalFov / 2);
+    this.projectionMatrix[0] = 1 / (this.viewportAspectRatio * tanThetaBy2);
+    this.projectionMatrix[5] = 1 / tanThetaBy2;
+  }
 }
