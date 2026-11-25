@@ -1,3 +1,8 @@
+export function clamp(min: number, max: number, value: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+
 export type Vector3 = {
   x: number;
   y: number;
@@ -6,6 +11,14 @@ export type Vector3 = {
 
 export function dot(vec1: Vector3, vec2: Vector3) {
   return vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z;
+}
+
+export function cross(vec1: Vector3, vec2: Vector3) {
+  return {
+    x: vec1.y * vec2.z - vec1.z * vec2.y,
+    y: vec1.z * vec2.x - vec1.x * vec2.z,
+    z: vec1.x * vec2.y - vec1.y * vec2.x
+  };
 }
 
 
@@ -33,6 +46,25 @@ export function matmul4x4(mat1: Float32Array, mat2: Float32Array) {
   }
 
   return result;
+}
+
+// w value is assumed to be 1 for the vector3, and for return, w is ignored
+export function vatmul4x4_3(mat: Float32Array, vec: Vector3) {
+  const vec_arr = [vec.x, vec.y, vec.z, 1];
+
+  let result = [0, 0, 0, 0];
+
+  for (let row = 0; row < 4; row++) {
+    for (let vec = 0; vec < 4; vec++) {
+      result[row]! += mat[vec * 4 + row]! * vec_arr[vec]!;
+    }
+  }
+
+  return {
+    x: result[0]!,
+    y: result[1]!,
+    z: result[2]!
+  };
 }
 
 export function translationMatrix(translation: Vector3) {

@@ -33,7 +33,7 @@ export class Renderer {
   prevTime: number | null = null;
   deltaFrameTime: number | null = null;
 
-  beforeFrameCallback: () => void = () => {}; //runs before a frame every frame
+  beforeFrameCallback: (dt: number) => void = () => {}; //runs before a frame every frame
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -168,7 +168,7 @@ export class Renderer {
   }
 
   private frame = () => {
-    this.beforeFrameCallback();
+    this.beforeFrameCallback(this.deltaFrameTime ?? 0);
     
     this.render();
 
@@ -179,7 +179,7 @@ export class Renderer {
     requestAnimationFrame(this.frame);
   }
 
-  startRenderLoop(beforeFrameCallback: () => void) {
+  startRenderLoop(beforeFrameCallback: (dt: number) => void) {
     if (!this.world) {
       App.Error("world for the renderer is not defined");
     }

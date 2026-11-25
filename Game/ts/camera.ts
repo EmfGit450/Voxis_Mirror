@@ -1,6 +1,8 @@
 import {
+  clamp,
   type Vector3,
-  dot
+  dot,
+  cross
 } from "./math";
 import { World } from "./world";
 
@@ -18,6 +20,11 @@ export class Camera {
   forward: Vector3 = { x: 0, y: 0, z: -1 };
 
   position: Vector3 = { x: 0, y: 0, z: 0 };
+
+  rotation: Vector3 = { x: 0, y: 0, z: 0 };
+
+  //clamps with min = -limit and max = limit
+  rotationLimits: Vector3 = { x: Infinity, y: Infinity, z: Infinity };
 
   projectionMatrix: Float32Array<ArrayBuffer>;
   cameraMatrix: Float32Array<ArrayBuffer>;
@@ -68,6 +75,26 @@ export class Camera {
     const tanThetaBy2 = Math.tan(this.verticalFov / 2);
     this.projectionMatrix[0] = 1 / (this.viewportAspectRatio * tanThetaBy2);
     this.projectionMatrix[5] = 1 / tanThetaBy2;
+  }
+
+  //does not rotate up vector
+  applyRotatation() {
+    this.rotation.y = clamp(-this.rotationLimits.y, this.rotationLimits.y, this.rotation.y);
+    this.rotation.z = clamp(-this.rotationLimits.z, this.rotationLimits.z, this.rotation.z);
+
+    this.forward = {
+      x: Math.sin(this.rotation.y) * Math.cos(this.rotation.z),
+      y: Math.sin(this.rotation.z),
+      z: -Math.cos(this.rotation.y) * Math.cos(this.rotation.z)
+    };
+    this.right = {
+      x: Math.cos(this.rotation.y),
+      y: 0,
+      z: Math.sin(this.rotation.y)
+    };
+    this.up = cross(this.right, this.forward);
+
+    this.updateCameraMatrix();
   }
 
   updateCameraMatrix() {
