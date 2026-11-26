@@ -1,6 +1,10 @@
 import {
   clamp,
   type Vector3,
+  scale,
+  normalized,
+  add,
+  subtract,
   dot,
   cross
 } from "./math";
@@ -9,7 +13,8 @@ import { World } from "./world";
 export class Camera {
   world: World;
 
-  verticalFov: number = 60 * Math.PI / 180;
+
+  verticalFov: number = 90 * Math.PI / 180;
   viewportAspectRatio: number = 1;
   
   near: number = 0.1;
@@ -25,6 +30,17 @@ export class Camera {
 
   //clamps with min = -limit and max = limit
   rotationLimits: Vector3 = { x: Infinity, y: Infinity, z: Infinity };
+
+
+  movementSpeed: number = 0.5;
+
+  keys: Record<string, boolean> = {
+    "KeyW": false,
+    "KeyA": false,
+    "KeyS": false,
+    "KeyD": false
+  };
+
 
   projectionMatrix: Float32Array<ArrayBuffer>;
   cameraMatrix: Float32Array<ArrayBuffer>;
@@ -69,6 +85,60 @@ export class Camera {
     //No translation now since camera starts at 0, 0, 0
 
     this.cameraMatrix[15] = 1;
+
+
+    this.rotationLimits.z = 1.5607963267948965;
+
+    //Looking
+    this.world.renderer.canvas.addEventListener("click", () => {
+      if (document.pointerLockElement !== this.world.renderer.canvas) {
+        this.world.renderer.canvas.requestPointerLock();
+      }
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (document.pointerLockElement !== this.world.renderer.canvas) return;
+
+      this.rotation.y += e.movementX * 0.001;
+      this.rotation.z -= e.movementY * 0.001;
+
+      this.applyRotatation();
+    });
+
+    //Movement
+    window.addEventListener("keydown", (e) => {
+      if (this.keys[e.code] !== undefined) {
+        this.keys[e.code] = true;
+      }
+    });
+    window.addEventListener("keyup", (e) => {
+      if (this.keys[e.code]) {
+        this.keys[e.code] = false;
+      }
+    });
+    
+    this.world.renderer.beforeFrameCallbacks.push((dt) => {
+      let movement = { x: 0, y: 0, z: 0 };
+
+      if (this.keys["KeyW"]) {
+        movement = add(movement, scale(this.forward, dt * this.movementSpeed));
+      }
+      if (this.keys["KeyA"]) {
+        movement = subtract(movement, scale(this.right, dt * this.movementSpeed));
+      }
+      if (this.keys["KeyS"]) {
+        movement = subtract(movement, scale(this.forward, dt * this.movementSpeed));
+      }
+      if (this.keys["KeyD"]) {
+        movement = add(movement, scale(this.right, dt * this.movementSpeed));
+      }
+
+      movement = normalized(movement);
+
+      this.position = add(this.position, movement);
+
+      this.updateCameraMatrix();
+    });
   }
 
   updateProjectionMatrix() {

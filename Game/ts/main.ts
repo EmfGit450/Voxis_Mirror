@@ -1,7 +1,6 @@
 import { Renderer } from "./webgpu/renderer"
 import { World } from "./world";
 import { MeshData } from "./objects";
-import { clamp } from "./math";
 
 function cubeVertices(r: number, g: number, b: number) {
   return new Float32Array([
@@ -73,51 +72,13 @@ async function main() {
 
     mesh1.updateWorldMatrix();
 
-    mesh2.rotation.x += 0.0001 * dt;
+    mesh2.rotation.x += 0.001 * dt;
 
     mesh2.updateWorldMatrix();
   });
 
-  canvas.addEventListener("click", () => {
-    if (document.pointerLockElement !== canvas) canvas.requestPointerLock();
-  });
-
   //@ts-ignore
   window.c = camera;
-
-  camera.rotationLimits.z = 1.5607963267948965;
-
-  window.addEventListener("mousemove", (e) => {
-    if (document.pointerLockElement !== canvas) return;
-
-    camera.rotation.y += e.movementX * 0.001;
-    camera.rotation.z -= e.movementY * 0.001;
-
-    camera.applyRotatation();
-  });
-
-  window.addEventListener("mouseup", () => {
-    console.log(camera.position, camera.rotation)
-  })
-
-  window.addEventListener("keydown", (e) => {
-    if (e.key == "w") {
-      camera.position.z -= 0.2;
-      camera.updateCameraMatrix();
-    }
-    if (e.key == "s") {
-      camera.position.z += 0.2;
-      camera.updateCameraMatrix();
-    }
-    if (e.key == "a") {
-      camera.position.x -= 0.2;
-      camera.updateCameraMatrix();
-    }
-    if (e.key == "d") {
-      camera.position.x += 0.2;
-      camera.updateCameraMatrix();
-    }
-  })
 
   console.log(renderer.device, renderer.adapter);
 }

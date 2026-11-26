@@ -33,7 +33,7 @@ export class Renderer {
   prevTime: number | null = null;
   deltaFrameTime: number | null = null;
 
-  beforeFrameCallback: (dt: number) => void = () => {}; //runs before a frame every frame
+  beforeFrameCallbacks: Array<(dt: number) => void> = []; //runs before a frame every frame
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -168,7 +168,9 @@ export class Renderer {
   }
 
   private frame = () => {
-    this.beforeFrameCallback(this.deltaFrameTime ?? 0);
+    for (let callback of this.beforeFrameCallbacks) {
+      callback(this.deltaFrameTime ?? 0);
+    }
     
     this.render();
 
@@ -184,7 +186,7 @@ export class Renderer {
       App.Error("world for the renderer is not defined");
     }
     
-    this.beforeFrameCallback = beforeFrameCallback;
+    this.beforeFrameCallbacks.push(beforeFrameCallback);
 
     App.Log("Starting render loop");
 
