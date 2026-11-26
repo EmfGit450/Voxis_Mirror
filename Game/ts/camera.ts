@@ -16,7 +16,7 @@ export class Camera {
 
   verticalFov: number = 90 * Math.PI / 180;
   viewportAspectRatio: number = 1;
-  
+
   near: number = 0.1;
   far: number = 1000;
 
@@ -66,7 +66,7 @@ export class Camera {
     this.projectionMatrix[11] = -1;
 
     this.cameraMatrix = new Float32Array(16);
-    
+
     //right vector
     this.cameraMatrix[0] = 1;
     this.cameraMatrix[1] = 0;
@@ -116,7 +116,7 @@ export class Camera {
         this.keys[e.code] = false;
       }
     });
-    
+
     this.world.renderer.beforeFrameCallbacks.push((dt) => {
       let movement = { x: 0, y: 0, z: 0 };
 
