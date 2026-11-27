@@ -25,24 +25,9 @@ export class World {
 
   addMesh(mesh: MeshData) {
     this.meshes.push(mesh);
-    mesh.initializeWorldMatrixBuffer(this.renderer.device);
-    mesh.initializeVertexBuffer(this.renderer.device);
+    this.renderer.addMeshData(mesh);
 
     App.Log(`Added mesh '${mesh.name}' to world`);
-  }
-
-  updateMeshWorldMatrixBuffer(mesh: MeshData) {
-    this.renderer.device.queue.writeBuffer(mesh.worldMatrixBuffer, 0, mesh.worldMatrix);
-  }
-
-  reinitVertexBuffer(mesh: MeshData) {
-    mesh.vertexBuffer.destroy();
-    const vertexBuffer = this.renderer.device.createBuffer({
-      size: mesh.vertices.byteLength,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
-    });
-    mesh.vertexBuffer = vertexBuffer;
-    this.renderer.device.queue.writeBuffer(vertexBuffer, 0, mesh.vertices as Float32Array<ArrayBuffer>);
   }
 
 }

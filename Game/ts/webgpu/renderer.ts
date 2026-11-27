@@ -1,4 +1,5 @@
-import { App } from "../declarations"
+import { App } from "../declarations";
+import { clamp } from "../math";
 import { type MeshData } from "../objects";
 import { World } from "../world";
 
@@ -13,6 +14,7 @@ export class Renderer {
 
   renderPassDescriptor!: GPURenderPassDescriptor;
 
+
   shaderModules!: {
     triangle: GPUShaderModule;
     //voxel: GPUShaderModule;
@@ -23,17 +25,28 @@ export class Renderer {
     //voxel: GPURenderPipeline;
   };
 
+
   world: World | undefined = undefined;
+
+
+  vertexBuffer!: GPUBuffer;
+  vertexBufferUsedSize: number = 0; //bytes
 
   cameraMatrixBuffer!: GPUBuffer;
   projectionMatrixBuffer!: GPUBuffer;
 
-  matrixBindGroups!: Map<MeshData, GPUBindGroup>;
+  worldMatricesStorageBuffer!: GPUBuffer;
+  worldMatricesCount: number = 0;
+
+  storageBufferBindGroup!: GPUBindGroup;
+  uniformsBindGroup!: GPUBindGroup;
+
 
   prevTime: number | null = null;
-  deltaFrameTime: number | null = null;
+  deltaFrameTime: number | null = null; //milliseconds
 
-  beforeFrameCallbacks: Array<(dt: number) => void> = []; //runs before a frame every frame
+  beforeFrameCallbacks: Array<(dt: number) => void> = []; //runs before a frame is rendered, every frame
+
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -76,10 +89,11 @@ export class Renderer {
       vertex: {
         module: this.shaderModules.triangle,
         buffers: [{
-          arrayStride: 6 * 4, //6 floats for 1 vertex
+          arrayStride: 32, //1 uint32 and 7 float32 for 1 vertex, 32 bytes
           attributes: [
-            { shaderLocation: 0, offset: 0, format: "float32x3" }, //3 for pos
-            { shaderLocation: 1, offset: 12, format: "float32x3" } //3 for color, 12 byte offset
+            { shaderLocation: 0, offset: 0, format: "uint32" }, //meshIndex
+            { shaderLocation: 1, offset: 4, format: "float32x3" }, //3 for pos, 4 byte offset
+            { shaderLocation: 2, offset: 16, format: "float32x4" } //4 for color, 4 + 12 byte offset
           ]
         }]
       },
@@ -96,6 +110,12 @@ export class Renderer {
     };
 
 
+    this.vertexBuffer = this.device.createBuffer({
+      size: 32 * 1000,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+    })
+
+
     this.cameraMatrixBuffer = this.device.createBuffer({
       size: 16 * 4,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
@@ -106,7 +126,31 @@ export class Renderer {
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
 
-    this.matrixBindGroups = new Map();
+    this.uniformsBindGroup = this.device.createBindGroup({
+      label: "bind group for uniforms",
+      layout: trianglePipeline.getBindGroupLayout(1),
+      entries: [
+        { binding: 0, resource: this.cameraMatrixBuffer },
+        { binding: 1, resource: this.projectionMatrixBuffer }
+      ]
+    });
+
+    App.Log("Created bind group for uniform buffers");
+
+
+    this.worldMatricesStorageBuffer = this.device.createBuffer({
+      size: 16 * 4 * 100,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+    });
+
+    this.storageBufferBindGroup = this.device.createBindGroup({
+      label: "bind group for storage buffer(s)",
+      layout: trianglePipeline.getBindGroupLayout(0),
+      entries: [
+        { binding: 0, resource: this.worldMatricesStorageBuffer }
+      ]
+    });
+
 
     this.renderPassDescriptor = {
       label: 'renderPassDescriptor for triangle meshes',
@@ -130,8 +174,8 @@ export class Renderer {
 
         const dpr = window.devicePixelRatio ?? 1;
 
-        canvas.width = Math.max(1, Math.min(width * dpr, this.device.limits.maxTextureDimension2D));
-        canvas.height = Math.max(1, Math.min(height * dpr, this.device.limits.maxTextureDimension2D));
+        canvas.width = clamp(1, this.device.limits.maxTextureDimension2D, width * dpr);
+        canvas.height = clamp(1, this.device.limits.maxTextureDimension2D, height * dpr);
 
         if (this.world) {
           this.world.camera.viewportAspectRatio = canvas.width / canvas.height;
@@ -143,6 +187,7 @@ export class Renderer {
     observer.observe(this.canvas);
   }
 
+
   render() {
     const firstAttachment = this.renderPassDescriptor.colorAttachments[Symbol.iterator]().next().value;
     firstAttachment.view  = this.ctx.getCurrentTexture().createView() as GPUTextureView;
@@ -150,16 +195,15 @@ export class Renderer {
     const encoder = this.device.createCommandEncoder({ label: "command encoder" });
 
     const pass = encoder.beginRenderPass(this.renderPassDescriptor);
+
     pass.setPipeline(this.pipelines.triangle);
-    
 
-    for (let i = 0; i < this.world!.meshes.length; i++) {
-      const mesh = this.world!.meshes[i]!;
+    pass.setBindGroup(0, this.storageBufferBindGroup);
+    pass.setBindGroup(1, this.uniformsBindGroup);
 
-      pass.setBindGroup(0, this.getMatrixBindGroup(mesh));
-      pass.setVertexBuffer(0, mesh.vertexBuffer);
-      pass.draw(mesh.vertexCount);
-    }
+    pass.setVertexBuffer(0, this.vertexBuffer);
+
+    pass.draw(this.vertexBufferUsedSize / 32); //usedByteSize is vertexCount * bytesPerVertex
 
     pass.end();
 
@@ -171,7 +215,7 @@ export class Renderer {
     for (let callback of this.beforeFrameCallbacks) {
       callback(this.deltaFrameTime ?? 0);
     }
-    
+
     this.render();
 
     const now = performance.now();
@@ -185,7 +229,7 @@ export class Renderer {
     if (!this.world) {
       App.Error("world for the renderer is not defined");
     }
-    
+
     this.beforeFrameCallbacks.push(beforeFrameCallback);
 
     App.Log("Starting render loop");
@@ -193,6 +237,7 @@ export class Renderer {
     this.prevTime = performance.now();
     requestAnimationFrame(this.frame);
   }
+
 
   private async initAdapter() {
     if (navigator.gpu === undefined) {
@@ -228,26 +273,29 @@ export class Renderer {
     return device;
   }
 
+
   updateCameraMatrixBuffer() {
     if (!this.world) App.Error("world for the renderer is undefined");
     this.device.queue.writeBuffer(this.cameraMatrixBuffer, 0, this.world!.camera.cameraMatrix);
   }
 
-  private getMatrixBindGroup(mesh: MeshData) {
-    if (this.matrixBindGroups.get(mesh)) {
-      return this.matrixBindGroups.get(mesh);
+
+  addMeshData(mesh: MeshData) {
+    mesh.meshIndex = this.vertexBufferUsedSize / 32 + 1;
+    mesh.vertexBufferByteOffset = this.vertexBufferUsedSize;
+
+    for (let i = 0; i < mesh.vertices.length; i += 8) {
+      mesh.vertices[i] = mesh.meshIndex;
     }
 
-    const bindGroup = this.device.createBindGroup({
-      label: "bind group for matrices",
-      layout: this.pipelines.triangle.getBindGroupLayout(0),
-      entries: [
-        { binding: 0, resource: mesh.worldMatrixBuffer },
-        { binding: 1, resource: this.cameraMatrixBuffer },
-        { binding: 2, resource: this.projectionMatrixBuffer }
-      ]
-    });
-    this.matrixBindGroups.set(mesh, bindGroup);
-    return bindGroup;
+    this.device.queue.writeBuffer(this.vertexBuffer, this.vertexBufferUsedSize, mesh.vertices as Float32Array<ArrayBuffer>);
+    this.vertexBufferUsedSize += mesh.vertices.byteLength;
+
+    this.device.queue.writeBuffer(this.worldMatricesStorageBuffer, this.worldMatricesCount, mesh.worldMatrix);
+    this.worldMatricesCount += 1;
+  }
+
+  updateMeshWorldMatrixBuffer(byteOffset: number, matrix: Float32Array<ArrayBuffer>) {
+    this.device.queue.writeBuffer(this.worldMatricesStorageBuffer, byteOffset, matrix);
   }
 }
