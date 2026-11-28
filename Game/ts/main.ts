@@ -62,7 +62,7 @@ async function main() {
   mesh2.translation = { x: 0, y: 0, z: -4 };
   mesh2.updateWorldMatrix();
 
-  const mesh3 = new MeshData("test3", 36, world, cubeVertices(Colors.Green()));
+  const mesh3 = new MeshData("test3", 36, world, cubeVertices({r: 1, g: 0.9, b: 0.4, a: 0.5}));
 
   mesh3.translation = { x: 1.5, y: 0, z: -4 };
   mesh3.updateWorldMatrix();

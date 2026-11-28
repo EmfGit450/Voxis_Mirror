@@ -12,8 +12,10 @@ export class Renderer {
   adapter!: GPUAdapter;
   device!: GPUDevice;
 
+
   renderPassDescriptor!: GPURenderPassDescriptor;
 
+  depthTexture!: GPUTexture;
 
   shaderModules!: {
     triangle: GPUShaderModule;
@@ -84,6 +86,13 @@ export class Renderer {
       triangle: triangleShaderModule,
     };
 
+    this.depthTexture = this.device.createTexture({
+      label: "depth texture",
+      size: [this.canvas.width, this.canvas.height],
+      format: "depth32float",
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+
     const trianglePipeline = this.device.createRenderPipeline({
       label: "triangle mesh pipeline",
       layout: "auto",
@@ -113,6 +122,11 @@ export class Renderer {
             },
           }
         }]
+      },
+      depthStencil: {
+        format: "depth32float",
+        depthWriteEnabled: true,
+        depthCompare: "less",
       }
     });
 
@@ -175,6 +189,12 @@ export class Renderer {
           storeOp: 'store',
         },
       ],
+      depthStencilAttachment: {
+        view: this.depthTexture.createView(),
+        depthClearValue: 1.0,
+        depthLoadOp: "clear",
+        depthStoreOp: "store",
+      }
     }
 
     App.Log("Created render pass descriptor");
@@ -194,6 +214,15 @@ export class Renderer {
           this.world.camera.viewportAspectRatio = canvas.width / canvas.height;
           this.world.camera.updateProjectionMatrix();
           this.device.queue.writeBuffer(this.projectionMatrixBuffer, 0, this.world.camera.projectionMatrix);
+
+          this.depthTexture.destroy();
+          this.depthTexture = this.device.createTexture({
+            label: "depth texture",
+            size: [canvas.width, canvas.height],
+            format: "depth32float",
+            usage: GPUTextureUsage.RENDER_ATTACHMENT
+          });
+          this.renderPassDescriptor.depthStencilAttachment!.view = this.depthTexture.createView()
         }
       }
     });
@@ -202,8 +231,8 @@ export class Renderer {
 
 
   render() {
-    const firstAttachment = this.renderPassDescriptor.colorAttachments[Symbol.iterator]().next().value;
-    firstAttachment.view  = this.ctx.getCurrentTexture().createView() as GPUTextureView;
+    const firstColAttachment = this.renderPassDescriptor.colorAttachments[Symbol.iterator]().next().value;
+    firstColAttachment.view = this.ctx.getCurrentTexture().createView() as GPUTextureView;
 
     const encoder = this.device.createCommandEncoder({ label: "command encoder" });
 
