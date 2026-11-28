@@ -67,7 +67,8 @@ export class Renderer {
     const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
     this.ctx.configure({
       device: this.device,
-      format: presentationFormat
+      format: presentationFormat,
+      alphaMode: "premultiplied"
     });
 
     App.Log("Configured GPUCanvasContext");
@@ -91,7 +92,7 @@ export class Renderer {
         buffers: [{
           arrayStride: 32, //1 uint32 and 7 float32 for 1 vertex, 32 bytes
           attributes: [
-            { shaderLocation: 0, offset: 0, format: "uint32" }, //meshIndex
+            { shaderLocation: 0, offset: 0, format: "float32" }, //meshIndex, stored as f32
             { shaderLocation: 1, offset: 4, format: "float32x3" }, //3 for pos, 4 byte offset
             { shaderLocation: 2, offset: 16, format: "float32x4" } //4 for color, 4 + 12 byte offset
           ]
@@ -99,7 +100,19 @@ export class Renderer {
       },
       fragment: {
         module: triangleShaderModule,
-        targets: [{ format: presentationFormat }]
+        targets: [{
+          format: presentationFormat,
+          blend: {
+            color: {
+              srcFactor: "one",
+              dstFactor: "one-minus-src-alpha"
+            },
+            alpha: {
+              srcFactor: "one",
+              dstFactor: "one-minus-src-alpha"
+            },
+          }
+        }]
       }
     });
 
@@ -212,15 +225,15 @@ export class Renderer {
   }
 
   private frame = () => {
+    const now = performance.now();
+    this.deltaFrameTime = performance.now() - this.prevTime!;
+    this.prevTime = now;
+
     for (let callback of this.beforeFrameCallbacks) {
       callback(this.deltaFrameTime ?? 0);
     }
 
     this.render();
-
-    const now = performance.now();
-    this.deltaFrameTime = performance.now() - this.prevTime!;
-    this.prevTime = now;
 
     requestAnimationFrame(this.frame);
   }
@@ -281,18 +294,24 @@ export class Renderer {
 
 
   addMeshData(mesh: MeshData) {
-    mesh.meshIndex = this.vertexBufferUsedSize / 32;
+    mesh.meshIndex = this.worldMatricesCount;
     mesh.vertexBufferByteOffset = this.vertexBufferUsedSize;
 
     for (let i = 0; i < mesh.vertices.length; i += 8) {
       mesh.vertices[i] = mesh.meshIndex;
     }
 
+    App.Log(`meshIndex and vertexBufferByteOffset of mesh '${mesh.name}' set`)
+
     this.device.queue.writeBuffer(this.vertexBuffer, this.vertexBufferUsedSize, mesh.vertices as Float32Array<ArrayBuffer>);
     this.vertexBufferUsedSize += mesh.vertices.byteLength;
 
-    this.device.queue.writeBuffer(this.worldMatricesStorageBuffer, this.worldMatricesCount, mesh.worldMatrix);
+    App.Log(`Wrote vertex data of mesh '${mesh.name}' to vertex buffer`);
+
+    this.device.queue.writeBuffer(this.worldMatricesStorageBuffer, this.worldMatricesCount * 64, mesh.worldMatrix);
     this.worldMatricesCount += 1;
+
+    App.Log(`Wrote world matrix of mesh '${mesh.name}' to vertex buffer`);
   }
 
   updateMeshWorldMatrixBuffer(byteOffset: number, matrix: Float32Array<ArrayBuffer>) {

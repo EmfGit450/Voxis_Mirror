@@ -34,14 +34,14 @@ export class MeshData {
                   z is the pitch
   */
 
-  constructor(name: string, vertexCount: number, world: World, vertices?: Float32Array) {
+  constructor(name: string, vertexCount: number, world: World, vertices: Float32Array) {
     this.name = name;
 
     this.vertexCount = vertexCount;
-    if (vertices && vertices.length != vertexCount * 6) {
+    if (vertices && vertices.length != vertexCount * 8) {
       App.Error("vertices in vertex array does not match vertex count");
     }
-    this.vertices = vertices ?? new Float32Array(vertexCount * 6); //6 floats per vertex
+    this.vertices = vertices; //1 uint32 and 7 floats per vertex
 
     this.worldMatrix = new Float32Array(16);
     this.worldMatrix[0] = 1;
@@ -65,23 +65,23 @@ export class MeshData {
 
     this.worldMatrix = matmul4x4(transMat, matmul4x4(rotationMat, scaleMat));
 
-    this.world.renderer.updateMeshWorldMatrixBuffer(this.meshIndex, this.worldMatrix);
+    this.world.renderer.updateMeshWorldMatrixBuffer(this.meshIndex * 64, this.worldMatrix);
   }
 
 }
 
-export class VoxelData {
-  width: number;
-  height: number;
-  depth: number;
+// export class VoxelData {
+//   width: number;
+//   height: number;
+//   depth: number;
 
-  data: Uint16Array; // one uint16 is enough to describe the material
+//   data: Uint16Array; // one uint16 is enough to describe the material
 
-  constructor(w: number, h: number, d: number) {
-    this.width = w;
-    this.height = h;
-    this.depth = d;
+//   constructor(w: number, h: number, d: number) {
+//     this.width = w;
+//     this.height = h;
+//     this.depth = d;
 
-    this.data = new Uint16Array(w * h * d);
-  }
-}
+//     this.data = new Uint16Array(w * h * d);
+//   }
+// }

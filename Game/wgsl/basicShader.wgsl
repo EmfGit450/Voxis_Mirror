@@ -4,7 +4,7 @@
 @group(1) @binding(1) var<uniform> projectionMat: mat4x4<f32>;
 
 struct Vertex {
-  @location(0) meshIndex: u32,
+  @location(0) meshIndex: f32,
   @location(1) pos: vec3f,
   @location(2) color: vec4f
 }
@@ -18,11 +18,11 @@ struct VSOutput {
 fn vs(vert: Vertex) -> VSOutput {
   var vsOut: VSOutput;
 
-  let worldPos = worldMats[vert.meshIndex] * vec4f(vert.pos, 1.0);
+  let worldPos = worldMats[u32(vert.meshIndex)] * vec4f(vert.pos, 1.0);
   let cameraPos = cameraMat * worldPos;
   vsOut.pos = projectionMat * cameraPos;
 
-  vsOut.color = vec4f(vert.color, 1.0);
+  vsOut.color = vert.color;
   return vsOut;
 }
 

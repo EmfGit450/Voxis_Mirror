@@ -1,45 +1,46 @@
 import { Renderer } from "./webgpu/renderer"
 import { World } from "./world";
 import { MeshData } from "./objects";
+import { type Color, Colors } from "./math";
 
-function cubeVertices(r: number, g: number, b: number) {
+function cubeVertices(c: Color) {
   return new Float32Array([
-    -0.5, -0.5, -0.5,   r, g, b,
-     0.5, -0.5, -0.5,   r, g, b,
-     0.5,  0.5, -0.5,   r, g, b,
-    -0.5, -0.5, -0.5,   r, g, b,
-     0.5,  0.5, -0.5,   r, g, b,
-    -0.5,  0.5, -0.5,   r, g, b,
-    -0.5, -0.5,  0.5,   r, g, b,
-     0.5, -0.5,  0.5,   r, g, b,
-     0.5,  0.5,  0.5,   r, g, b,
-    -0.5, -0.5,  0.5,   r, g, b,
-     0.5,  0.5,  0.5,   r, g, b,
-    -0.5,  0.5,  0.5,   r, g, b,
-     0.5, -0.5,  0.5,   r, g, b,
-     0.5, -0.5, -0.5,   r, g, b,
-     0.5,  0.5, -0.5,   r, g, b,
-     0.5, -0.5,  0.5,   r, g, b,
-     0.5,  0.5, -0.5,   r, g, b,
-     0.5,  0.5,  0.5,   r, g, b,
-    -0.5, -0.5, -0.5,   r, g, b,
-    -0.5, -0.5,  0.5,   r, g, b,
-    -0.5,  0.5,  0.5,   r, g, b,
-    -0.5, -0.5, -0.5,   r, g, b,
-    -0.5,  0.5,  0.5,   r, g, b,
-    -0.5,  0.5, -0.5,   r, g, b,
-    -0.5,  0.5,  0.5,   r, g, b,
-     0.5,  0.5,  0.5,   r, g, b,
-     0.5,  0.5, -0.5,   r, g, b,
-    -0.5,  0.5,  0.5,   r, g, b,
-     0.5,  0.5, -0.5,   r, g, b,
-    -0.5,  0.5, -0.5,   r, g, b,
-    -0.5, -0.5, -0.5,   r, g, b,
-     0.5, -0.5, -0.5,   r, g, b,
-     0.5, -0.5,  0.5,   r, g, b,
-    -0.5, -0.5, -0.5,   r, g, b,
-     0.5, -0.5,  0.5,   r, g, b,
-    -0.5, -0.5,  0.5,   r, g, b
+    0, -0.5, -0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5, -0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5,  0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5, -0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5,  0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5,  0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5, -0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5, -0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5,  0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5, -0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5,  0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5,  0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5, -0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5, -0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5,  0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5, -0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5,  0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5,  0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5, -0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5, -0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5,  0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5, -0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5,  0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5,  0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5,  0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5,  0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5,  0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5,  0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5,  0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5,  0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5, -0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5, -0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5, -0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5, -0.5, -0.5,   c.r, c.g, c.b, c.a,
+    0, 0.5, -0.5,  0.5,   c.r, c.g, c.b, c.a,
+    0, -0.5, -0.5,  0.5,   c.r, c.g, c.b, c.a
   ]);
 }
 async function main() {
@@ -51,16 +52,12 @@ async function main() {
 
   const camera = world.camera;
 
-  const mesh1 = new MeshData("test", 36, world);
-
-  mesh1.updateVertices(cubeVertices(0.3, 0.3, 1.0));
+  const mesh1 = new MeshData("test", 36, world, cubeVertices(Colors.Blue()));
 
   mesh1.translation = { x: -1, y: 0, z: -4 };
   mesh1.updateWorldMatrix();
 
-  const mesh2 = new MeshData("test2", 36, world);
-
-  mesh2.updateVertices(cubeVertices(1.0, 0.2, 0.2));
+  const mesh2 = new MeshData("test2", 36, world, cubeVertices(Colors.Red()));
 
   mesh2.translation = { x: 1, y: 0, z: -4 };
   mesh2.updateWorldMatrix();
@@ -77,6 +74,10 @@ async function main() {
     mesh2.updateWorldMatrix();
   });
 
+  //@ts-ignore
+  window.r = renderer;
+  //@ts-ignore
+  window.w = world;
   //@ts-ignore
   window.c = camera;
 

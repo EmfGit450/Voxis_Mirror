@@ -2,7 +2,7 @@ export function clamp(min: number, max: number, value: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-
+//Linear Algebra
 export type Vector3 = {
   x: number;
   y: number;
@@ -154,3 +154,31 @@ export function pitchMatrix(angle: number) {
 
   return matrix;
 }
+
+
+//Color
+export type Color = {
+  r: number,
+  g: number,
+  b: number,
+  a: number
+}
+
+export const Colors = {
+  Red: () => ({ r: 1, g: 0.3, b: 0.3, a: 1 }),
+  Green: () => ({ r: 0.3, g: 1, b: 0.3, a: 1 }),
+  Blue: () => ({ r: 0.3, g: 0.3, b: 1, a: 1 })
+}
+
+// export function colorFromHSL(h: number, s: number, l: number, a: number) {
+//   const s_c = clamp(0, 100, s);
+//   const l_c = clamp(0, 100, l);
+//   const a_c = clamp(0, 1, a);
+
+//   const s_prime = s_c / 100;
+//   const l_prime = s_c / 100;
+
+//   const chroma = (1 - Math.abs(2 * l_prime - 1)) * s_prime
+
+//   const x = chroma * (1 - Math.abs(((h / 60) % 2) - 1));
+// }
