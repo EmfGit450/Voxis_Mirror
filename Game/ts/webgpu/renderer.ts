@@ -281,7 +281,7 @@ export class Renderer {
 
 
   addMeshData(mesh: MeshData) {
-    mesh.meshIndex = this.vertexBufferUsedSize / 32 + 1;
+    mesh.meshIndex = this.vertexBufferUsedSize / 32;
     mesh.vertexBufferByteOffset = this.vertexBufferUsedSize;
 
     for (let i = 0; i < mesh.vertices.length; i += 8) {

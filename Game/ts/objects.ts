@@ -65,7 +65,7 @@ export class MeshData {
 
     this.worldMatrix = matmul4x4(transMat, matmul4x4(rotationMat, scaleMat));
 
-    this.world.renderer.updateMeshWorldMatrixBuffer(this., matrix)
+    this.world.renderer.updateMeshWorldMatrixBuffer(this.meshIndex, this.worldMatrix);
   }
 
 }
