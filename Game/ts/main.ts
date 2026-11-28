@@ -52,15 +52,20 @@ async function main() {
 
   const camera = world.camera;
 
-  const mesh1 = new MeshData("test", 36, world, cubeVertices(Colors.Blue()));
+  const mesh1 = new MeshData("test", 36, world, cubeVertices(Colors.Red()));
 
-  mesh1.translation = { x: -1, y: 0, z: -4 };
+  mesh1.translation = { x: -1.5, y: 0, z: -4 };
   mesh1.updateWorldMatrix();
 
-  const mesh2 = new MeshData("test2", 36, world, cubeVertices(Colors.Red()));
+  const mesh2 = new MeshData("test2", 36, world, cubeVertices(Colors.Blue()));
 
-  mesh2.translation = { x: 1, y: 0, z: -4 };
+  mesh2.translation = { x: 0, y: 0, z: -4 };
   mesh2.updateWorldMatrix();
+
+  const mesh3 = new MeshData("test3", 36, world, cubeVertices(Colors.Green()));
+
+  mesh3.translation = { x: 1.5, y: 0, z: -4 };
+  mesh3.updateWorldMatrix();
 
   renderer.startRenderLoop((dt) => {
     mesh1.rotation.x += 0.0001 * dt;
@@ -72,6 +77,11 @@ async function main() {
     mesh2.rotation.x += 0.001 * dt;
 
     mesh2.updateWorldMatrix();
+
+    mesh3.rotation.y += 0.001 * dt;
+    mesh3.rotation.z += 0.001 * dt;
+
+    mesh3.updateWorldMatrix();
   });
 
   //@ts-ignore
